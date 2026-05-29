@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+    <h5 class="mb-0 fw-bold">Combos e Pacotes</h5>
+    <button type="button" class="btn btn-sm btn-dark rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalNovoPacote">
+        <i class="fa-solid fa-gift me-1"></i> Criar Combo
+    </button>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Nome do Pacote</th>
+                    <th>Qtd. Sessões</th>
+                    <th>Valor Total</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for pacote in pacotes %}
+                <tr>
+                    <td class="ps-3 fw-bold text-dark">{{ pacote.nome_pacote }}</td>
+                    <td>
+                        <span class="badge bg-light text-dark border">
+                            <i class="fa-solid fa-layer-group me-1 text-muted"></i> {{ pacote.qtd_sessoes }} sessões
+                        </span>
+                    </td>
+                    <td class="fw-bold text-success">R$ {{ "%.2f"|format(pacote.valor_total)|replace('.', ',') }}</td>
+                    <td class="text-center">
+                        <button class="btn btn-link text-danger p-0 px-2" title="Excluir Combo">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center p-4 text-muted">
+                        <i class="fa-solid fa-box-open d-block fa-2xl mb-2 text-black-50"></i>
+                        Nenhum combo cadastrado ainda.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNovoPacote" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">Criar Novo Combo Mensal</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('pacotes') }}" method="POST">
+                <div class="modal-body">
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Nome do Pacote</label>
+                        <input type="text" class="form-control rounded-3" name="nome_pacote" placeholder="Ex: Combo Mensal (4x Pé e Mão)" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label small fw-bold text-muted">Valor do Combo (R$)</label>
+                            <input type="text" class="form-control rounded-3" name="valor_total" placeholder="120,00" required>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label small fw-bold text-muted">Total de Sessões</label>
+                            <input type="number" class="form-control rounded-3" name="qtd_sessoes" placeholder="Ex: 4" min="2" required>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-3 btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-dark rounded-pill px-4 btn-sm">Salvar Combo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

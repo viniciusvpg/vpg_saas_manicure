@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+    <h5 class="mb-0 fw-bold">Meus Clientes</h5>
+    <button type="button" class="btn btn-sm btn-dark rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalNovoCliente">
+        <i class="fa-solid fa-user-plus me-1"></i> Cadastrar Cliente
+    </button>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Nome da Cliente</th>
+                    <th>WhatsApp</th>
+                    <th>Saldo de Combos</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cliente in clientes %}
+                <tr>
+                    <td class="ps-3 fw-bold text-dark">{{ cliente.nome }}</td>
+                    <td class="text-muted">{{ cliente.whatsapp }}</td>
+                    <td>
+                        {% set possui_pacote = false %}
+                        {% for cp in cliente.historico_pacotes %}
+                            {% if cp.ativo and cp.sessoes_restantes > 0 %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2">
+                                    {{ cp.pacote_comprado.nome_pacote }}: <b>{{ cp.sessoes_restantes }} restam</b>
+                                </span>
+                                {% set possui_pacote = true %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if not possui_pacote %}
+                            <span class="text-muted small">Sem pacote ativo</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-link text-dark p-0 px-2" data-bs-toggle="modal" data-bs-target="#modalVender{{ cliente.id }}" title="Vender Combo">
+                            <i class="fa-solid fa-cart-plus fa-lg text-secondary"></i>
+                        </button>
+                        
+                        <a href="https://wa.me/{{ cliente.whatsapp }}" target="_blank" class="btn btn-link text-success p-0 px-2">
+                            <i class="fa-brands fa-whatsapp fa-lg"></i>
+                        </a>
+                    </td>
+                </tr>
+
+                <div class="modal fade" id="modalVender{{ cliente.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 rounded-4 shadow">
+                            <div class="modal-header border-0 pb-0">
+                                <h6 class="modal-title fw-bold">Vender Combo para {{ cliente.nome }}</h6>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form action="{{ url_for('vender_pacote') }}" method="POST">
+                                <input type="hidden" name="cliente_id" value="{{ cliente.id }}">
+                                <div class="modal-body text-start">
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold text-muted">Selecione o Combo</label>
+                                        <select class="form-select rounded-3" name="pacote_id" required>
+                                            <option value="" disabled selected>Escolha o pacote comprado...</option>
+                                            {% for pacote in pacotes %}
+                                            <option value="{{ pacote.id }}">{{ pacote.nome_pacote }} ({{ pacote.qtd_sessoes }}x por R$ {{ "%.2f"|format(pacote.valor_total)|replace('.', ',') }})</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="modal-footer border-0 pt-0">
+                                    <button type="button" class="btn btn-light rounded-pill px-3 btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-dark rounded-pill px-4 btn-sm">Confirmar Venda</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center p-4 text-muted">
+                        <i class="fa-solid fa-users-slash d-block fa-2xl mb-2 text-black-50"></i>
+                        Nenhuma cliente cadastrada ainda.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNovoCliente" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold">Cadastrar Nova Cliente</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('clientes') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Nome Completo</label>
+                        <input type="text" class="form-control rounded-3" name="nome" placeholder="Ex: Maria da Silva" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Número do WhatsApp</label>
+                        <input type="text" class="form-control rounded-3" name="whatsapp" placeholder="Ex: 5547999999999" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-3 btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-dark rounded-pill px-4 btn-sm">Salvar Cliente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

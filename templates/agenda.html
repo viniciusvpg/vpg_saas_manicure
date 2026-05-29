@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row g-3 align-items-center mb-4 mt-2">
+    <div class="col-12 col-md-4">
+        <h5 class="mb-0 fw-bold">Minha Agenda</h5>
+    </div>
+    
+    <div class="col-12 col-md-8 d-flex justify-content-between align-items-center gap-2">
+        <form method="GET" action="{{ url_for('agenda') }}" class="d-flex align-items-center gap-2 m-0 flex-grow-1 flex-md-grow-0">
+            <input type="date" class="form-control form-control-sm rounded-pill px-3" name="data" value="{{ data_selecionada }}" onchange="this.form.submit()">
+        </form>
+        
+        <button type="button" class="btn btn-sm btn-dark rounded-pill px-3 flex-shrink-0" data-bs-toggle="modal" data-bs-target="#modalNovoAgendamento">
+            <i class="fa-solid fa-plus me-1"></i> Agendar Horário
+        </button>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+            {% for agendamento in agendamentos %}
+            
+            <div class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center p-3 border-light {% if agendamento.status == 'Não Compareceu' %}opacity-50 bg-light{% endif %}">
+                
+                <div class="d-flex align-items-center w-100">
+                    <div class="bg-light rounded-3 p-2 text-center me-3 border fw-bold text-dark" style="min-width: 70px;">
+                        {{ agendamento.data_hora.strftime('%H:%M') }}
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold text-dark">
+                            {{ agendamento.cliente.nome }}
+                            {% if agendamento.tipo_pagamento == 'Pacote' %}
+                                <span class="badge bg-purple-subtle text-purple rounded-pill small ms-1" style="font-size:0.7rem; background-color: #f3e5f5; color: #9c27b0;">Plano</span>
+                            {% else %}
+                                <span class="badge bg-info-subtle text-info rounded-pill small ms-1" style="font-size:0.7rem; background-color: #e0f7fa; color: #00838f;">Avulso</span>
+                            {% endif %}
+                        </h6>
+                        <small class="text-muted d-block">{{ agendamento.servico.nome_servico }}</small>
+                        
+                        {% if agendamento.status == 'Concluído' %}
+                            <span class="text-success small fw-bold"><i class="fa-solid fa-circle-check"></i> Atendido e Pago</span>
+                        {% elif agendamento.status == 'Não Compareceu' %}
+                            <span class="text-danger small fw-bold"><i class="fa-solid fa-circle-xmark"></i> Falta (Anulado)</span>
+                        {% else %}
+                            <span class="text-warning small fw-bold"><i class="fa-regular fa-clock"></i> Aguardando cliente...</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-2 align-items-center mt-3 mt-md-0 w-100 justify-content-md-end" style="justify-content: flex-end;">
+                    
+                    {% if agendamento.status == 'Confirmado' or agendamento.status == 'Agendado' %}
+                        <form action="{{ url_for('concluir_agendamento', id=agendamento.id) }}" method="POST" class="m-0">
+                            <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3" title="Confirmar Pagamento">
+                                <i class="fa-solid fa-check me-1"></i> Pago
+                            </button>
+                        </form>
+                        <form action="{{ url_for('cancelar_agendamento', id=agendamento.id) }}" method="POST" class="m-0">
+                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" title="Registrar Falta">
+                                <i class="fa-solid fa-xmark me-1"></i> Falta
+                            </button>
+                        </form>
+                    {% endif %}
+                    
+                    <a href="https://wa.me/{{ agendamento.cliente.whatsapp }}" target="_blank" class="btn btn-sm btn-outline-success rounded-circle d-flex align-items-center justify-content-center" style="width: 34px; height: 34px;">
+                        <i class="fa-brands fa-whatsapp fa-lg"></i>
+                    </a>
+                </div>
+                
+            </div>
+            {% else %}
+            <div class="text-center p-5 text-muted">
+                <i class="fa-regular fa-calendar-xmark d-block fa-2xl mb-3 text-black-50"></i>
+                <h6 class="fw-bold mb-1">Nenhum agendamento para esta data.</h6>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNovoAgendamento" tabindex="-1" aria-labelledby="modalNovoAgendamentoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold" id="modalNovoAgendamentoLabel">Marcar Horário Manual</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('agenda') }}" method="POST">
+                <div class="modal-body">
+                    
+                    <div class="mb-3">
+                        <label for="cliente_id" class="form-label small fw-bold text-muted">Selecione a Cliente</label>
+                        <select class="form-select rounded-3" id="cliente_id" name="cliente_id" required>
+                            <option value="" disabled selected>Escolha uma cliente...</option>
+                            {% for cliente in clientes %}
+                            <option value="{{ cliente.id }}">{{ cliente.nome }} ({{ cliente.whatsapp }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="servico_id" class="form-label small fw-bold text-muted">Serviço Pretendido</label>
+                        <select class="form-select rounded-3" id="servico_id" name="servico_id" required>
+                            <option value="" disabled selected>Escolha o serviço...</option>
+                            {% for servico in servicos %}
+                            <option value="{{ servico.id }}">{{ servico.nome_servico }} — R$ {{ "%.2f"|format(servico.valor)|replace('.', ',') }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="data_hora" class="form-label small fw-bold text-muted">Data e Horário</label>
+                        <input type="datetime-local" class="form-control rounded-3" id="data_hora" name="data_hora" required>
+                    </div>
+
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-3 btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-dark rounded-pill px-4 btn-sm">Confirmar Horário</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

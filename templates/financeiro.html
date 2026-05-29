@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-4 mt-2">
+    <h5 class="mb-0 fw-bold">Fluxo de Caixa / Financeiro</h5>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3">
+            <small class="text-muted fw-bold d-block mb-1">Entradas de Planos</small>
+            <h4 class="fw-bold text-purple mb-0" style="color: #9c27b0;">R$ {{ "%.2f"|format(total_pacotes)|replace('.', ',') }}</h4>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3">
+            <small class="text-muted fw-bold d-block mb-1">Entradas Avulsas</small>
+            <h4 class="fw-bold text-success mb-0">R$ {{ "%.2f"|format(total_avulso)|replace('.', ',') }}</h4>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3" style="background: var(--rosa-gradiente);">
+            <small class="fw-bold d-block mb-1 text-dark" style="opacity: 0.7;">Faturamento Total Geral</small>
+            <h3 class="fw-bold text-dark mb-0">R$ {{ "%.2f"|format(total_geral)|replace('.', ',') }}</h3>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 p-3">
+    <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-list-check me-2"></i>Histórico Recente de Ganhos</h6>
+    
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0" style="font-size:0.9rem;">
+            <thead class="table-light">
+                <tr>
+                    <th>Cliente</th>
+                    <th>Origem do Ganho</th>
+                    <th>Data</th>
+                    <th>Valor</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ap in avulsos_pagos %}
+                <tr>
+                    <td class="fw-bold">{{ ap.cliente.nome }}</td>
+                    <td>Atendimento Avulso: <span class="badge bg-light text-dark border">{{ ap.servico.nome_servico }}</span></td>
+                    <td class="text-muted">{{ ap.data_hora.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td class="fw-bold text-success">+ R$ {{ "%.2f"|format(ap.servico.valor)|replace('.', ',') }}</td>
+                </tr>
+                {% endfor %}
+
+                {% for vp in vendas_pacotes %}
+                <tr>
+                    <td class="fw-bold">{{ vp.cliente.nome }}</td>
+                    <td>Compra de Combo: <span class="badge text-purple bg-purple-subtle border" style="background-color: #f3e5f5; color:#9c27b0;">{{ vp.pacote_comprado.nome_pacote }}</span></td>
+                    <td class="text-muted">{{ vp.data_compra.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td class="fw-bold text-success">+ R$ {{ "%.2f"|format(vp.pacote_comprado.valor_total)|replace('.', ',') }}</td>
+                </tr>
+                {% endfor %}
+
+                {% if not avulsos_pagos and not vendas_pacotes %}
+                <tr>
+                    <td colspan="4" class="text-center text-muted p-4">Nenhuma entrada registrada no caixa ainda.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

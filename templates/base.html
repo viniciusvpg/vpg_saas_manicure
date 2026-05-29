@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel da Profissional | AgendaBot</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome (Ícones) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Paleta de Cores Refinada com Fundo Rosinha Claro */
+        :root {
+            --rosa-forte: #e87ba4;     /* Rosa principal (botões e links) */
+            --rosa-claro: #ffe4ef;     /* Fundo de itens selecionados */
+            --rosa-gradiente: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            
+            /* TROCA AQUI: Um tom de rosa pastel bem delicado para o fundo */
+            --fundo-app: #fff0f5;      
+            
+            --texto-escuro: #4a4a4a;   /* Cinza chumbo para leitura leve */
+        }
+
+        body {
+            background-color: var(--fundo-app);
+            color: var(--texto-escuro);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        /* ADICIONE ESTA REGRA: Faz os cartões ficarem brancos e destacarem no fundo rosa */
+        .card {
+            background-color: #ffffff !important;
+            border: none;
+        }
+        
+        /* Garante que a tabela dentro do card herde o fundo branco */
+        .table {
+            background-color: #ffffff !important;
+        }
+        .table-light {
+            background-color: #fff8fa !important; /* Um topo de tabela sutilmente rosado */
+        }
+
+        /* O restante do seu CSS permanece o mesmo... */
+        .navbar-brand {
+            font-weight: 800;
+            color: var(--rosa-forte) !important; 
+        }
+        .content-area {
+            padding: 15px;
+            padding-bottom: 80px; 
+        }
+        .list-group-item {
+            border-radius: 12px;
+            margin-bottom: 5px;
+            color: var(--texto-escuro);
+            transition: all 0.2s ease-in-out;
+        }
+        .list-group-item:hover {
+            background-color: var(--rosa-claro);
+            color: var(--rosa-forte);
+        }
+        .menu-ativo {
+            background-color: var(--rosa-claro);
+            color: var(--rosa-forte) !important;
+            font-weight: 600;
+        }
+        .btn-dark {
+            background-color: var(--rosa-forte);
+            border-color: var(--rosa-forte);
+            font-weight: 500;
+            box-shadow: 0 4px 10px rgba(232, 123, 164, 0.3);
+        }
+        .btn-dark:hover {
+            background-color: #d16b91;
+            border-color: #d16b91;
+        }
+        .text-success, .btn-outline-success {
+            color: #20c997 !important; 
+            border-color: #20c997;
+        }
+        .btn-outline-success:hover {
+            background-color: #20c997;
+            color: white !important;
+        }
+        .navbar, .offcanvas {
+            background-color: var(--fundo-app) !important; 
+            border-color: var(--rosa-claro) !important;
+        }
+
+        /* Tira a sombra padrão escura do topo e coloca uma rosinha bem leve */
+        .shadow-sm {
+            box-shadow: 0 2px 10px rgba(232, 123, 164, 0.08) !important;
+        }
+
+        /* Como o menu agora é rosinha, o item ativo vira um "cartão branco" */
+        .menu-ativo {
+            background-color: #ffffff !important;
+            color: var(--rosa-forte) !important;
+            font-weight: 700;
+            box-shadow: 0 4px 10px rgba(232, 123, 164, 0.15);
+            border-left: 4px solid var(--rosa-forte); /* Um charme extra na lateral */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar Superior -->
+    <nav class="navbar navbar-light bg-white shadow-sm sticky-top">
+        <div class="container-fluid">
+            <button class="navbar-toggler border-0 px-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <a class="navbar-brand mx-auto" href="/">
+                <i class="fa-solid fa-calendar-check"></i> AgendaBot
+            </a>
+            
+            <div class="d-flex">
+                <a href="#" class="nav-link text-dark"><i class="fa-solid fa-circle-user fa-xl"></i></a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Menu Lateral (Abre por cima da tela no mobile) -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel" style="width: 280px;">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title" id="sidebarMenuLabel"><i class="fa-solid fa-calendar-check text-danger"></i> Menu</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="list-group list-group-flush">
+                <a href="{{ url_for('dashboard') }}" class="list-group-item list-group-item-action border-0 mb-1">
+                    <i class="fa-solid fa-chart-line me-2"></i> Dashboard
+                </a>
+                <a href="{{ url_for('agenda') }}" class="list-group-item list-group-item-action border-0 mb-1">
+                    <i class="fa-solid fa-calendar-days me-2"></i> Minha Agenda
+                </a>
+                <a href="{{ url_for('servicos') }}" class="list-group-item list-group-item-action border-0 mb-1">
+                    <i class="fa-solid fa-list me-2"></i> Meus Serviços
+                </a>
+                <a href="{{ url_for('pacotes') }}" class="list-group-item list-group-item-action border-0 mb-1">
+                    <i class="fa-solid fa-gift me-2"></i> Combos / Pacotes
+                </a>
+                <a href="{{ url_for('clientes') }}" class="list-group-item list-group-item-action border-0 mb-1">
+                    <i class="fa-solid fa-users me-2"></i> Clientes
+                </a>
+                <a href="{{ url_for('horarios') }}" class="list-group-item list-group-item-action border-0 mb-1">
+                    <i class="fa-solid fa-clock me-2"></i> Meus Horários
+                </a>
+                <a href="{{ url_for('financeiro') }}" class="list-group-item list-group-item-action border-0 mb-1">
+                    <i class="fa-solid fa-wallet me-2"></i> Financeiro
+                </a>
+                <a href="{{ url_for('logout') }}" class="list-group-item list-group-item-action border-0 mt-3 text-danger">
+                    <i class="fa-solid fa-right-from-bracket me-2"></i> Sair
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Área Principal que muda a cada página -->
+    <main class="content-area container-fluid">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

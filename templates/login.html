@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrar | AgendaBot</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --rosa-forte: #e87ba4;
+            --fundo-app: #fff0f5;
+            --texto-escuro: #4a4a4a;
+        }
+        body {
+            background-color: var(--fundo-app);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 30px;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(232, 123, 164, 0.15);
+            text-align: center;
+        }
+        .logo-login {
+            color: var(--rosa-forte);
+            font-weight: 800;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            display: block;
+            text-decoration: none;
+        }
+        .form-control {
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid #eee;
+            background-color: #fafafa;
+        }
+        .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(232, 123, 164, 0.1);
+            border-color: var(--rosa-forte);
+        }
+        .btn-login {
+            background-color: var(--rosa-forte);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(232, 123, 164, 0.3);
+        }
+        .btn-login:hover {
+            background-color: #d16b91;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card mx-3">
+        <a href="#" class="logo-login">
+            <i class="fa-solid fa-calendar-check"></i> Manicure Agenda
+        </a>
+        
+        <h5 class="fw-bold mb-4">Bem-vinda!</h5>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-danger py-2 small">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('login') }}" method="POST">
+            <div class="mb-3 text-start">
+                <label class="form-label small fw-bold text-muted">Telefone</label>
+                <input type="text" name="telefone" class="form-control" placeholder="digite seu telefone" required>
+            </div>
+            <div class="mb-3 text-start">
+                <label class="form-label small fw-bold text-muted">Senha</label>
+                <input type="password" name="senha" class="form-control" placeholder="digite sua senha" required>
+            </div>
+            
+            <button type="submit" class="btn btn-login">Acessar Painel</button>
+        </form>
+
+        <div class="mt-4">
+            <a href="#" class="text-decoration-none small text-muted">Esqueceu a senha?</a>
+        </div>
+        <div class="mt-4 pt-3 border-top border-light">
+            <small class="text-muted">Desenvolvido por <a href="http://vpgsolucoes.com.br/" target="_blank" class="text-decoration-none fw-bold" style="color: #0a0099;">VPG Soluções</a> &copy; 2026</small>
+        </div>
+    </div>
+
+</body>
+</html>

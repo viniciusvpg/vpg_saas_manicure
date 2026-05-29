@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+    <h5 class="mb-0 fw-bold">Meus Serviços</h5>
+    <button type="button" class="btn btn-sm btn-dark rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalNovoServico">
+        <i class="fa-solid fa-plus me-1"></i> Novo Serviço
+    </button>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th class="ps-3">Serviço</th>
+                    <th>Duração</th>
+                    <th>Preço</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for servico in servicos %}
+                <tr>
+                    <td class="ps-3 fw-bold text-dark">{{ servico.nome_servico }}</td>
+                    <td>
+                        <span class="badge bg-light text-dark border">
+                            <i class="fa-regular fa-clock me-1 text-muted"></i> {{ servico.duracao_minutos }} min
+                        </span>
+                    </td>
+                    <td class="fw-bold text-success">R$ {{ "%.2f"|format(servico.valor)|replace('.', ',') }}</td>
+                    <td class="text-center">
+                        <button class="btn btn-link text-danger p-0 px-2"><i class="fa-regular fa-trash-can"></i></button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center p-4 text-muted">
+                        <i class="fa-regular fa-folder-open d-block fa-2xl mb-2 text-black-50"></i>
+                        Nenhum serviço cadastrado ainda.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNovoServico" tabindex="-1" aria-labelledby="modalNovoServicoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title fw-bold" id="modalNovoServicoLabel">Cadastrar Novo Serviço</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('servicos') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="nome_servico" class="form-label small fw-bold text-muted">Nome do Serviço</label>
+                        <input type="text" class="form-control rounded-3" id="nome_servico" name="nome_servico" placeholder="Ex: Pé e Mão, Manutenção de Gel..." required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label for="valor" class="form-label small fw-bold text-muted">Preço (R$)</label>
+                            <input type="text" class="form-control rounded-3" id="valor" name="valor" placeholder="0,00" required>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label for="duracao_minutos" class="form-label small fw-bold text-muted">Duração (minutos)</label>
+                            <select class="form-select rounded-3" id="duracao_minutos" name="duracao_minutos" required>
+                                <option value="30">30 min</option>
+                                <option value="45">45 min</option>
+                                <option value="60" selected>1 hora</option>
+                                <option value="90">1h 30m</option>
+                                <option value="120">2 horas</option>
+                                <option value="150">2h 30m</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-3 btn-sm" data-bs-toggle="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-dark rounded-pill px-4 btn-sm">Salvar Serviço</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

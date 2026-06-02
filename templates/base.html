@@ -150,6 +150,9 @@
                 </a>
                 <a href="{{ url_for('financeiro') }}" class="list-group-item list-group-item-action border-0 mb-1">
                     <i class="fa-solid fa-wallet me-2"></i> Financeiro
+                <a href="{{ url_for('meu_bot') }}" class="nav-link text-dark fw-bold mb-2 p-3 rounded-3 {% if request.endpoint == 'meu_bot' %}bg-light border-start border-4 border-success{% endif %}">
+                    <i class="fa-solid fa-robot fa-lg me-2" style="color: #10b981;"></i> Meu Bot
+                </a>
                 </a>
                 <a href="{{ url_for('logout') }}" class="list-group-item list-group-item-action border-0 mt-3 text-danger">
                     <i class="fa-solid fa-right-from-bracket me-2"></i> Sair

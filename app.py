@@ -379,6 +379,17 @@ def login():
         flash('Usuário ou senha incorretos.')
     return render_template('login.html')
 
+@app.route('/meu_bot')
+def meu_bot():
+    if 'manicure_id' not in session: 
+        return redirect(url_for('login'))
+        
+    # Passamos os dados necessários para o menu superior funcionar corretamente
+    dados_dinamicos = {
+        "nome_manicure": session.get('manicure_nome')
+    }
+    return render_template('meu_bot.html', dados=dados_dinamicos)
+
 @app.route('/logout')
 def logout():
     session.clear() # Limpa todos os dados da sessão

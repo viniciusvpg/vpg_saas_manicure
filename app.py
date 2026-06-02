@@ -432,6 +432,19 @@ def painel_master():
     todas = Manicure.query.all()
     return render_template('painel_master.html', manicures=todas)
 
+@app.route('/mudar_senha_manicure/<int:id>', methods=['POST'])
+@admin_required
+def mudar_senha_manicure(id):
+    manicure = Manicure.query.get_or_404(id)
+    nova_senha = request.form.get('nova_senha')
+    
+    if nova_senha:
+        manicure.senha = nova_senha
+        db.session.commit()
+        flash(f'Senha da cliente {manicure.nome} alterada com sucesso!')
+        
+    return redirect(url_for('painel_master'))
+
 @app.route('/logout_master')
 def logout_master():
     session['is_super_admin'] = False

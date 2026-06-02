@@ -54,17 +54,46 @@
                                     {% endif %}
                                 </td>
                                 <td class="text-center">
-                                    <form action="{{ url_for('toggle_manicure', id=m.id) }}" method="POST" class="m-0">
-                                        {% if m.ativo %}
-                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
-                                                <i class="fa-solid fa-user-slash me-1"></i> Desativar
-                                            </button>
-                                        {% else %}
-                                            <button type="submit" class="btn btn-sm btn-green rounded-pill px-3">
-                                                <i class="fa-solid fa-user-check me-1"></i> Ativar
-                                            </button>
-                                        {% endif %}
-                                    </form>
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <form action="{{ url_for('toggle_manicure', id=m.id) }}" method="POST" class="m-0">
+                                            {% if m.ativo %}
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+                                                    <i class="fa-solid fa-user-slash me-1"></i> Desativar
+                                                </button>
+                                            {% else %}
+                                                <button type="submit" class="btn btn-sm btn-green rounded-pill px-3">
+                                                    <i class="fa-solid fa-user-check me-1"></i> Ativar
+                                                </button>
+                                            {% endif %}
+                                        </form>
+
+                                        <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalSenha{{ m.id }}">
+                                            <i class="fa-solid fa-key me-1"></i> Senha
+                                        </button>
+                                    </div>
+
+                                    <div class="modal fade" id="modalSenha{{ m.id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content bg-dark text-white border-secondary text-start">
+                                                <div class="modal-header border-secondary">
+                                                    <h6 class="modal-title text-accent"><i class="fa-solid fa-lock me-2"></i>Nova senha para: {{ m.nome }}</h6>
+                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form action="{{ url_for('mudar_senha_manicure', id=m.id) }}" method="POST">
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <label class="form-label small fw-bold text-muted">Digite a nova senha</label>
+                                                            <input type="text" name="nova_senha" class="form-control bg-black text-white border-secondary" placeholder="Ex: nova_senha_123" required>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer border-secondary pt-1 pb-1">
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
+                                                        <button type="submit" class="btn btn-sm btn-warning rounded-pill px-3 fw-bold text-dark">Salvar Nova Senha</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                             {% else %}

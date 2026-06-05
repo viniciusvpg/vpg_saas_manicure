@@ -14,10 +14,28 @@
             --bg-fundo: #121212 !important;
             --bg-card: #1e1e1e !important;
             --texto-escuro: #e0e0e0 !important;
-            --cor-fundo-ativo: #2c2c2c !important; /* Fundo do item selecionado no menu fica cinza escuro */
+            --cor-fundo-ativo: #2c2c2c !important; 
         }
         
-        /* Ocultar Boas Vindas */
+        /* 1. Força os Modais de Cadastro a ficarem escuros */
+        body.usuario-dark-mode .modal-content {
+            background-color: var(--bg-card) !important;
+            color: var(--texto-escuro) !important;
+            border: 1px solid #333 !important;
+        }
+
+        /* 2. Deixa o X (fechar) e o Menu Hambúrguer brancos */
+        body.usuario-dark-mode .btn-close,
+        body.usuario-dark-mode .navbar-toggler-icon {
+            filter: invert(1) grayscale(100%) brightness(200%) !important;
+        }
+
+        /* 3. Melhora a leitura dos textos secundários */
+        body.usuario-dark-mode .text-muted,
+        body.usuario-dark-mode .text-secondary {
+            color: #a0a0a0 !important;
+        }
+
         body.usuario-hide-welcome .saudacao-topo {
             display: none !important;
         }

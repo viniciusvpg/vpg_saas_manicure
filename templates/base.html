@@ -8,6 +8,55 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
+        /* ========================================================= */
+        /* VACINA CONTRA O BOOTSTRAP (FORÇAR ADAPTAÇÃO AO DARK MODE) */
+        /* ========================================================= */
+
+        /* 1. Remove os fundos brancos engessados dos cartões */
+        .bg-white, .bg-light {
+            background-color: var(--bg-card) !important;
+        }
+
+        /* 2. Força letras que estavam configuradas como "text-dark" a ficarem visíveis */
+        .text-dark {
+            color: var(--texto-escuro) !important;
+        }
+
+        /* 3. Estiliza os inputs e selects para não ficarem cinzas ou brancos estourados */
+        .form-control, .form-select, .input-group-text {
+            background-color: var(--bg-fundo) !important;
+            color: var(--texto-escuro) !important;
+            border: 1px solid var(--cor-fundo-ativo) !important;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            background-color: var(--bg-fundo) !important;
+            color: var(--texto-escuro) !important;
+            border-color: var(--cor-primaria) !important;
+            box-shadow: 0 0 0 0.2rem rgba(128, 128, 128, 0.1) !important;
+        }
+
+        /* 4. Tira a transparência e ajusta as tabelas */
+        .table {
+            color: var(--texto-escuro) !important;
+            border-color: var(--cor-fundo-ativo) !important;
+        }
+        .table > :not(caption) > * > * {
+            background-color: var(--bg-card) !important;
+            color: var(--texto-escuro) !important;
+        }
+
+        /* 5. Transforma botões pretos ocultos (Ex: Salvar Regras) na cor do tema atual */
+        .btn-dark {
+            background-color: var(--cor-primaria) !important;
+            color: #ffffff !important;
+            border: none !important;
+        }
+        .btn-dark:hover {
+            background-color: var(--cor-hover) !important;
+            color: #ffffff !important;
+        }
+        
         /* ============================================== */
         /* DICIONÁRIO DE TEMAS (WHITE-LABEL DINÂMICO)     */
         /* ============================================== */

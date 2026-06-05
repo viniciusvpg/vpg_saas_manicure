@@ -186,7 +186,9 @@
             </a>
             
             <div class="d-flex">
-                <a href="#" class="nav-link"><i class="fa-solid fa-circle-user fa-xl"></i></a>
+                <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#modalConfiguracoes">
+                    <i class="fa-solid fa-circle-user fa-xl text-tema"></i>
+                </a>
             </div>
         </div>
     </nav>
@@ -250,11 +252,7 @@
         </div>
     </div>
 
-    <div class="d-flex">
-        <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#modalConfiguracoes">
-            <i class="fa-solid fa-circle-user fa-xl text-tema"></i>
-        </a>
-    </div>
+
 
     <main class="content-area container-fluid">
         {% block content %}{% endblock %}

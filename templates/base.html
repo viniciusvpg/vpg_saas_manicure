@@ -6,8 +6,19 @@
     <title>Painel do Estabelecimento | AgendaBot</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     
     <style>
+        /* Configurações do Usuário (Injetadas via JS) */
+        body.usuario-dark-mode {
+            --bg-fundo: #121212 !important;
+            --bg-card: #1e1e1e !important;
+            --texto-escuro: #e0e0e0 !important;
+        }
+        body.usuario-hide-welcome .saudacao-topo {
+            display: none !important;
+        }
+
         /* ========================================================= */
         /* VACINA CONTRA O BOOTSTRAP (FORÇAR ADAPTAÇÃO AO DARK MODE) */
         /* ========================================================= */
@@ -234,20 +245,34 @@
     <div class="modal fade" id="modalConfiguracoes" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content border-0 shadow">
-                <div class="modal-header">
+                <div class="modal-header border-bottom-0 pb-0">
                     <h6 class="modal-title fw-bold text-dark"><i class="fa-solid fa-gear me-2"></i> Configurações</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form action="{{ url_for('upload_logo') }}" method="POST" enctype="multipart/form-data">
-                    <div class="modal-body text-center">
-                        <label class="form-label small fw-bold text-muted">Upload da Logo</label>
-                        <input type="file" name="logo_file" class="form-control form-control-sm mb-3" accept="image/png, image/jpeg" required>
-                        <p class="small text-muted" style="font-size: 0.7rem;">Formatos aceitos: JPG ou PNG. Recomendado: fundo transparente.</p>
-                    </div>
-                    <div class="modal-footer p-1">
+                
+                <div class="modal-body">
+                    <form action="{{ url_for('upload_logo') }}" method="POST" enctype="multipart/form-data" class="mb-3 border-bottom pb-3">
+                        <label class="form-label small fw-bold text-muted mb-1">Upload da Logo</label>
+                        <input type="file" name="logo_file" class="form-control form-control-sm mb-2" accept="image/png, image/jpeg" required>
                         <button type="submit" class="btn btn-sm btn-tema w-100 fw-bold">Salvar Imagem</button>
+                    </form>
+
+                    <label class="form-label small fw-bold text-muted mb-2">Preferências</label>
+                    
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="toggleDarkMode">
+                        <label class="form-check-label small text-dark" for="toggleDarkMode">Forçar Modo Escuro</label>
                     </div>
-                </form>
+                    
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="toggleWelcome">
+                        <label class="form-check-label small text-dark" for="toggleWelcome">Ocultar "Olá" no Início</label>
+                    </div>
+
+                    <button id="btnInstallApp" class="btn btn-sm btn-dark w-100 fw-bold" style="display: none;">
+                        <i class="fa-solid fa-download me-2"></i> Instalar como Aplicativo
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -259,5 +284,56 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+        // --- 1. LÓGICA DAS PREFERÊNCIAS VISUAIS ---
+        const darkModeToggle = document.getElementById('toggleDarkMode');
+        const welcomeToggle = document.getElementById('toggleWelcome');
+
+        // Carrega o que o usuário salvou antes
+        if (localStorage.getItem('pref_darkMode') === 'true') {
+            document.body.classList.add('usuario-dark-mode');
+            if(darkModeToggle) darkModeToggle.checked = true;
+        }
+        if (localStorage.getItem('pref_hideWelcome') === 'true') {
+            document.body.classList.add('usuario-hide-welcome');
+            if(welcomeToggle) welcomeToggle.checked = true;
+        }
+
+        // Salva quando o usuário clica no botão
+        if(darkModeToggle) {
+            darkModeToggle.addEventListener('change', (e) => {
+                localStorage.setItem('pref_darkMode', e.target.checked);
+                document.body.classList.toggle('usuario-dark-mode', e.target.checked);
+            });
+        }
+        if(welcomeToggle) {
+            welcomeToggle.addEventListener('change', (e) => {
+                localStorage.setItem('pref_hideWelcome', e.target.checked);
+                document.body.classList.toggle('usuario-hide-welcome', e.target.checked);
+            });
+        }
+
+        // --- 2. LÓGICA DE INSTALAÇÃO DO APP (PWA) ---
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Impede que o navegador mostre o aviso padrão sozinho
+            e.preventDefault();
+            deferredPrompt = e;
+            // Mostra o nosso botão dentro do modal de configurações
+            const installBtn = document.getElementById('btnInstallApp');
+            if(installBtn) installBtn.style.display = 'block';
+        });
+
+        document.getElementById('btnInstallApp').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt(); // Mostra a tela de instalação do celular/chrome
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('btnInstallApp').style.display = 'none';
+                }
+                deferredPrompt = null;
+            }
+        });
+    </script>
 </body>
 </html>

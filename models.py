@@ -13,7 +13,8 @@ class Estabelecimento(db.Model): # Antiga classe Manicure
     
     # NOVO CAMPO: Define o tema do painel
     nicho = db.Column(db.String(50), default='manicure')
-    
+    logo = db.Column(db.String(255), nullable=True) 
+
     # Relacionamentos
     servicos = db.relationship('Servico', backref='estabelecimento', lazy=True)
     clientes = db.relationship('Cliente', backref='estabelecimento', lazy=True)

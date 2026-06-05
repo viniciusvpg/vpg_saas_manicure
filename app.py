@@ -2,6 +2,8 @@ from flask import Flask, redirect, render_template, request, url_for, session, f
 from models import db, Estabelecimento, Servico, Agendamento, Cliente, Pacote, ClientePacote, ConfigHorario
 from datetime import datetime
 from functools import wraps
+import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
@@ -11,6 +13,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'chave_secreta_para_sessoes'
 
 db.init_app(app)
+app.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Cria as tabelas automaticamente se não existirem
 with app.app_context():
@@ -290,6 +294,36 @@ def horarios():
     mapa_configs = {c.dia_semana: c for c in configs}
     return render_template('horarios.html', dias_semana=dias_semana, mapa_configs=mapa_configs)
 
+@app.route('/upload_logo', methods=['POST'])
+def upload_logo():
+    if 'estabelecimento_id' not in session: return redirect(url_for('login'))
+    
+    if 'logo_file' not in request.files:
+        return redirect(request.referrer)
+        
+    file = request.files['logo_file']
+    if file.filename == '':
+        return redirect(request.referrer)
+        
+    if file:
+        # Cria um nome seguro e único para a imagem
+        extensao = file.filename.rsplit('.', 1)[1].lower()
+        nome_arquivo = f"logo_cliente_{session['estabelecimento_id']}.{extensao}"
+        caminho_completo = os.path.join(app.config['UPLOAD_FOLDER'], nome_arquivo)
+        
+        # Salva o arquivo na pasta
+        file.save(caminho_completo)
+        
+        # Salva no banco de dados e atualiza a sessão
+        estabelecimento = Estabelecimento.query.get(session['estabelecimento_id'])
+        estabelecimento.logo = nome_arquivo
+        db.session.commit()
+        session['logo'] = nome_arquivo
+        
+        flash("Logo atualizada com sucesso!")
+        
+    return redirect(request.referrer)
+
 @app.route('/toggle_estabelecimento/<int:id>', methods=['POST'])
 @admin_required
 def toggle_estabelecimento(id):
@@ -316,6 +350,7 @@ def login():
             session['estabelecimento_id'] = estabelecimento.id
             session['estabelecimento_nome'] = estabelecimento.nome
             session['nicho'] = estabelecimento.nicho # <- INJEÇÃO DO TEMA
+            session['logo'] = estabelecimento.logo
             return redirect(url_for('dashboard'))
             
         flash('Usuário ou senha incorretos.')

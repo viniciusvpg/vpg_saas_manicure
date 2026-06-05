@@ -56,7 +56,7 @@
             background-color: var(--cor-hover) !important;
             color: #ffffff !important;
         }
-        
+
         /* ============================================== */
         /* DICIONÁRIO DE TEMAS (WHITE-LABEL DINÂMICO)     */
         /* ============================================== */
@@ -178,7 +178,11 @@
             </button>
             
             <a class="navbar-brand mx-auto" href="/">
-                <i class="fa-solid fa-calendar-check"></i> AgendaBot
+                {% if session.get('logo') %}
+                    <img src="{{ url_for('static', filename='uploads/' + session.get('logo')) }}" alt="Logo" style="height: 40px; max-width: 180px; object-fit: contain;">
+                {% else %}
+                    <i class="fa-solid fa-calendar-check text-tema"></i> {{ session.get('estabelecimento_nome', 'AgendaBot') }}
+                {% endif %}
             </a>
             
             <div class="d-flex">
@@ -223,6 +227,33 @@
                 </a>
             </div>
         </div>
+    </div>
+
+    <div class="modal fade" id="modalConfiguracoes" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header">
+                    <h6 class="modal-title fw-bold text-dark"><i class="fa-solid fa-gear me-2"></i> Configurações</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ url_for('upload_logo') }}" method="POST" enctype="multipart/form-data">
+                    <div class="modal-body text-center">
+                        <label class="form-label small fw-bold text-muted">Upload da Logo</label>
+                        <input type="file" name="logo_file" class="form-control form-control-sm mb-3" accept="image/png, image/jpeg" required>
+                        <p class="small text-muted" style="font-size: 0.7rem;">Formatos aceitos: JPG ou PNG. Recomendado: fundo transparente.</p>
+                    </div>
+                    <div class="modal-footer p-1">
+                        <button type="submit" class="btn btn-sm btn-tema w-100 fw-bold">Salvar Imagem</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex">
+        <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#modalConfiguracoes">
+            <i class="fa-solid fa-circle-user fa-xl text-tema"></i>
+        </a>
     </div>
 
     <main class="content-area container-fluid">

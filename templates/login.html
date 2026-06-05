@@ -3,49 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | AgendaBot SaaS</title>
+    <title>Login | Gestão de Agendamentos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            /* Fundo escuro e moderno para a tela de login */
-            background: linear-gradient(135deg, #121212 0%, #1e1e1e 100%);
+            background-color: #f3f4f6; /* Fundo claro e moderno */
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
         }
         .login-box {
             background-color: #ffffff;
-            border-radius: 20px;
+            border-radius: 16px;
             padding: 40px;
             width: 100%;
-            max-width: 420px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); /* Sombra bem suave */
+            border: 1px solid #e5e7eb;
         }
         .btn-saas {
-            background-color: #10b981; /* Verde esmeralda tech */
+            background-color: #111827; /* Quase preto, super elegante */
             color: white;
             transition: all 0.3s;
         }
         .btn-saas:hover {
-            background-color: #059669;
+            background-color: #374151;
             color: white;
-            transform: translateY(-2px);
+            transform: translateY(-1px);
+        }
+        .form-control {
+            background-color: #f9fafb;
+            border: 1px solid #d1d5db;
+        }
+        .form-control:focus {
+            border-color: #111827;
+            box-shadow: none;
         }
     </style>
 </head>
 <body>
 
     <div class="login-box text-center">
-        <!-- Título Neutro -->
-        <h2 class="fw-bold mb-1 text-dark">
-            <i class="fa-solid fa-calendar-check text-success"></i> AgendaBot
-        </h2>
-        <p class="text-muted mb-4 small">Gestão inteligente de agendamentos</p>
+        <h3 class="fw-bold mb-1 text-dark">
+            <i class="fa-solid fa-calendar-check text-primary"></i> Painel de Acesso
+        </h3>
+        <p class="text-muted mb-4 small">Faça login para gerenciar sua agenda</p>
 
-        <!-- Tratamento de Erros de Senha -->
         {% with messages = get_flashed_messages() %}
             {% if messages %}
                 {% for message in messages %}
@@ -54,23 +60,22 @@
             {% endif %}
         {% endwith %}
 
-        <!-- Formulário Genérico -->
         <form method="POST">
             <div class="mb-3 text-start">
                 <label class="form-label fw-bold small text-secondary">Telefone (WhatsApp)</label>
-                <input type="text" name="telefone" class="form-control bg-light" placeholder="Ex: 47999999999" required>
+                <input type="text" name="telefone" class="form-control" placeholder="Ex: 47999999999" required>
             </div>
             
             <div class="mb-4 text-start">
                 <label class="form-label fw-bold small text-secondary">Senha de Acesso</label>
-                <input type="password" name="senha" class="form-control bg-light" placeholder="Digite sua senha" required>
+                <input type="password" name="senha" class="form-control" placeholder="Digite sua senha" required>
             </div>
             
-            <button type="submit" class="btn btn-saas w-100 py-2 fw-bold rounded-3">Acessar Painel</button>
+            <button type="submit" class="btn btn-saas w-100 py-2 fw-bold rounded-3">Entrar no Sistema</button>
         </form>
         
-        <div class="mt-4 text-muted" style="font-size: 0.75rem;">
-            Desenvolvido por <strong>VPG Soluções</strong> &copy; 2026
+        <div class="mt-4 pt-3 border-top border-light">
+            <small class="text-muted">Desenvolvido por <a href="http://vpgsolucoes.com.br/" target="_blank" class="text-decoration-none fw-bold" style="color: #0a0099;">VPG Soluções</a> &copy; 2026</small>
         </div>
     </div>
 

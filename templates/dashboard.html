@@ -2,8 +2,7 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
-    {# Futuramente o "Ana" virá da variável do banco: {{ manicure.nome }} #}
-    <h5 class="mb-0 fw-bold">Olá, {{ dados.nome_manicure }}! 👋</h5>
+    <h5 class="mb-0 fw-bold">Olá, {{ session.get('estabelecimento_nome') }}!</h5>
     <span class="badge bg-success rounded-pill px-3 py-2 shadow-sm"><i class="fa-solid fa-robot"></i> Bot Online</span>
 </div>
 

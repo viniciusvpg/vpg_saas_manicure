@@ -1,112 +1,157 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8"><title>SaaS Master Panel</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Master | VPG SaaS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { background: #0a0a0a; color: #f5f5f5; font-family: 'Urbanist', sans-serif; padding: 40px; }
-        .card { background: #161616; border: 1px solid rgba(222, 255, 154, 0.1); border-radius: 20px; }
-        .text-accent { color: #deff9a; }
-        .table { color: white; }
-        .btn-green { background: #deff9a; color: black; font-weight: bold; border-radius: 10px; }
-    </style>
 </head>
-<body>
-    <div class="container">
-        <h2 class="text-accent mb-4"><i class="fa-solid fa-microchip me-2"></i> SaaS Master Panel</h2>
-        
-        <div class="row g-4">
-            <div class="col-md-4">
-                <div class="card p-4">
-                    <h5 class="text-accent mb-3">Novo Cliente (Onboarding)</h5>
-                    <form method="POST">
-                        <div class="mb-3"><input type="text" name="nome" class="form-control bg-dark text-white border-secondary" placeholder="Nome da Manicure/Salão" required></div>
-                        <div class="mb-3"><input type="text" name="telefone" class="form-control bg-dark text-white border-secondary" placeholder="WhatsApp Login" required></div>
-                        <div class="mb-3"><input type="password" name="senha" class="form-control bg-dark text-white border-secondary" placeholder="Senha de Acesso" required></div>
-                        <button class="btn btn-green w-100">Criar Acesso</button>
-                    </form>
-                </div>
+<body class="bg-light">
+
+    <nav class="navbar navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#"><i class="fa-solid fa-crown text-warning me-2"></i> Painel Master VPG</a>
+            <a href="{{ url_for('logout_master') }}" class="btn btn-outline-light btn-sm">Sair</a>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-success fw-bold"><i class="fa-solid fa-check me-2"></i>{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
+                <h5 class="mb-0 fw-bold text-dark">Estabelecimentos Clientes</h5>
+                <button class="btn btn-dark fw-bold rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalNovo">
+                    <i class="fa-solid fa-plus me-1"></i> Novo Cliente
+                </button>
             </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light text-secondary">
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome do Negócio</th>
+                            <th>WhatsApp Bot</th>
+                            <th>Nicho/Tema</th>
+                            <th>Status</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in estabelecimentos %}
+                        <tr>
+                            <td class="fw-bold">{{ e.id }}</td>
+                            <td>{{ e.nome }}</td>
+                            <td>{{ e.telefone_bot }}</td>
+                            <td>
+                                {% if e.nicho == 'manicure' %}
+                                    <span class="badge" style="background-color: #e87ba4;">Salão / Manicure</span>
+                                {% elif e.nicho == 'barbearia' %}
+                                    <span class="badge text-dark" style="background-color: #daa520;">Barbearia</span>
+                                {% elif e.nicho == 'tatuagem' %}
+                                    <span class="badge" style="background-color: #8a2be2;">Tatuagem</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ e.nicho }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if e.ativo %}
+                                    <span class="badge bg-success">Ativo</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Suspenso</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex justify-content-center gap-2">
+                                    
+                                    <form action="{{ url_for('toggle_estabelecimento', id=e.id) }}" method="POST" class="m-0">
+                                        {% if e.ativo %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Desativar</button>
+                                        {% else %}
+                                            <button type="submit" class="btn btn-sm btn-success rounded-pill px-3">Ativar</button>
+                                        {% endif %}
+                                    </form>
 
-            <div class="col-md-8">
-                <div class="card p-4">
-                    <h5 class="text-accent mb-3">Sua Frota de Clientes</h5>
-                    <table class="table table-dark table-hover align-middle">
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>Login (WhatsApp)</th>
-                                <th>Status</th>
-                                <th class="text-center">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for m in manicures %}
-                            <tr>
-                                <td class="fw-bold">{{ m.nome }}</td>
-                                <td style="font-family:'JetBrains Mono'">{{ m.telefone_bot }}</td>
-                                <td>
-                                    {% if m.ativo %}
-                                        <span class="badge bg-success-subtle text-success border border-success px-2 py-1">Ativo</span>
-                                    {% else %}
-                                        <span class="badge bg-danger-subtle text-danger border border-danger px-2 py-1">Inativo</span>
-                                    {% endif %}
-                                </td>
-                                <td class="text-center">
-                                    <div class="d-flex justify-content-center gap-2">
-                                        <form action="{{ url_for('toggle_manicure', id=m.id) }}" method="POST" class="m-0">
-                                            {% if m.ativo %}
-                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
-                                                    <i class="fa-solid fa-user-slash me-1"></i> Desativar
-                                                </button>
-                                            {% else %}
-                                                <button type="submit" class="btn btn-sm btn-green rounded-pill px-3">
-                                                    <i class="fa-solid fa-user-check me-1"></i> Ativar
-                                                </button>
-                                            {% endif %}
-                                        </form>
+                                    <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3 text-dark fw-bold" data-bs-toggle="modal" data-bs-target="#modalSenha{{ e.id }}">
+                                        Senha
+                                    </button>
+                                </div>
 
-                                        <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalSenha{{ m.id }}">
-                                            <i class="fa-solid fa-key me-1"></i> Senha
-                                        </button>
-                                    </div>
-
-                                    <div class="modal fade" id="modalSenha{{ m.id }}" tabindex="-1" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content bg-dark text-white border-secondary text-start">
-                                                <div class="modal-header border-secondary">
-                                                    <h6 class="modal-title text-accent"><i class="fa-solid fa-lock me-2"></i>Nova senha para: {{ m.nome }}</h6>
-                                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <form action="{{ url_for('mudar_senha_manicure', id=m.id) }}" method="POST">
-                                                    <div class="modal-body">
-                                                        <div class="mb-3">
-                                                            <label class="form-label small fw-bold text-muted">Digite a nova senha</label>
-                                                            <input type="text" name="nova_senha" class="form-control bg-black text-white border-secondary" placeholder="Ex: nova_senha_123" required>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer border-secondary pt-1 pb-1">
-                                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-bs-dismiss="modal">Cancelar</button>
-                                                        <button type="submit" class="btn btn-sm btn-warning rounded-pill px-3 fw-bold text-dark">Salvar Nova Senha</button>
-                                                    </div>
-                                                </form>
+                                <div class="modal fade" id="modalSenha{{ e.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content text-start">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title fw-bold">Nova senha para: {{ e.nome }}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                             </div>
+                                            <form action="{{ url_for('mudar_senha_estabelecimento', id=e.id) }}" method="POST">
+                                                <div class="modal-body">
+                                                    <label class="form-label small fw-bold text-muted">Digite a nova senha</label>
+                                                    <input type="text" name="nova_senha" class="form-control" required>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="submit" class="btn btn-warning fw-bold">Salvar Senha</button>
+                                                </div>
+                                            </form>
                                         </div>
                                     </div>
-                                </td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="4" class="text-center text-muted p-4">Nenhuma manicure cadastrada no SaaS.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="modalNovo" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-shop me-2"></i> Cadastrar Novo SaaS</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ url_for('painel_master') }}" method="POST">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nome do Estabelecimento</label>
+                            <input type="text" name="nome" class="form-control" placeholder="Ex: Barbearia do João" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Telefone (WhatsApp do Bot)</label>
+                            <input type="text" name="telefone" class="form-control" placeholder="4799999999" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Senha Inicial de Acesso</label>
+                            <input type="text" name="senha" class="form-control" placeholder="Senha do cliente" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-primary">Tema do Painel (Nicho)</label>
+                            <select name="nicho" class="form-select border-primary" required>
+                                <option value="manicure">💅 Manicure / Salão de Beleza (Cor: Rosa)</option>
+                                <option value="barbearia">💈 Barbearia (Cor: Dourado e Dark)</option>
+                                <option value="tatuagem">🖋️ Estúdio de Tatuagem (Cor: Roxo Neon e Dark)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-dark fw-bold">Ativar Cliente</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

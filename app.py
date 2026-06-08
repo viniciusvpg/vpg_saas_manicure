@@ -324,6 +324,25 @@ def upload_logo():
         
     return redirect(request.referrer)
 
+@app.route('/atualizar_tema', methods=['POST'])
+def atualizar_tema():
+    if 'estabelecimento_id' not in session: 
+        return redirect(url_for('login'))
+        
+    novo_tema = request.form.get('tema')
+    
+    # Valida se o tema escolhido é um dos permitidos
+    if novo_tema in ['manicure', 'barbearia', 'tatuagem']:
+        estabelecimento = Estabelecimento.query.get(session['estabelecimento_id'])
+        estabelecimento.nicho = novo_tema
+        db.session.commit()
+        
+        # Atualiza a memória da sessão atual
+        session['nicho'] = novo_tema
+        flash("Tema visual atualizado!")
+        
+    return redirect(request.referrer)
+
 @app.route('/toggle_estabelecimento/<int:id>', methods=['POST'])
 @admin_required
 def toggle_estabelecimento(id):

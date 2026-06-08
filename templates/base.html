@@ -278,7 +278,16 @@
                         <button type="submit" class="btn btn-sm btn-tema w-100 fw-bold">Salvar Imagem</button>
                     </form>
 
-                    <label class="form-label small fw-bold text-muted mb-2">Preferências</label>
+                    <label class="form-label small fw-bold text-muted mb-2">Cor Principal</label>
+                    <form action="{{ url_for('atualizar_tema') }}" method="POST" class="mb-3 border-bottom pb-3">
+                        <select name="tema" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="manicure" {% if session.get('nicho') == 'manicure' %}selected{% endif %}>💖 Rosa Clássico</option>
+                            <option value="barbearia" {% if session.get('nicho') == 'barbearia' %}selected{% endif %}>💛 Dourado Premium</option>
+                            <option value="tatuagem" {% if session.get('nicho') == 'tatuagem' %}selected{% endif %}>💜 Roxo Neon</option>
+                        </select>
+                    </form>
+
+                    <label class="form-label small fw-bold text-muted mb-2">Preferências da Tela</label>
                     
                     <div class="form-check form-switch mb-2">
                         <input class="form-check-input" type="checkbox" id="toggleDarkMode">

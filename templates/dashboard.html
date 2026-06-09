@@ -3,9 +3,9 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
     <h4 class="mb-4 fw-bold saudacao-topo">Olá, {{ dados.nome_estabelecimento }}! 👋</h4>
-    <span id="badge-bot-status" class="badge bg-secondary rounded-pill px-3 py-2 shadow-sm" style="transition: all 0.3s;">
+    <a href="/meu_bot" id="badge-bot-status" class="badge bg-secondary rounded-pill px-3 py-2 shadow-sm text-decoration-none text-white" style="transition: all 0.3s; cursor: pointer;">
         <i class="fa-solid fa-spinner fa-spin"></i> Verificando Bot...
-    </span>
+    </a>
 </div>
 
 <!-- Cartões de Resumo (Cards) -->
@@ -155,7 +155,7 @@
             fetch(`/bot-interno/api/bot/status?sessao=${sessaoId}`)
                 .then(response => response.json())
                 .then(data => {
-                    badge.className = "badge rounded-pill px-3 py-2 shadow-sm"; // Limpa as cores antigas
+                    badge.className = "badge rounded-pill px-3 py-2 shadow-sm text-decoration-none text-white";
                     
                     if (data.status === 'connected') {
                         badge.classList.add('bg-success');
@@ -171,7 +171,7 @@
                     }
                 })
                 .catch(error => {
-                    badge.className = "badge bg-secondary rounded-pill px-3 py-2 shadow-sm";
+                    badge.className = "badge bg-secondary rounded-pill px-3 py-2 shadow-sm text-decoration-none text-white";
                     badge.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Status Indisponível';
                 });
         }

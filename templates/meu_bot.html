@@ -1,11 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4 mt-2">
-    <h5 class="mb-0 fw-bold">Configuração do Robô 🤖</h5>
-    <span class="badge bg-success rounded-pill px-3 py-2"><i class="fa-brands fa-whatsapp me-1"></i> Atendimento VPG</span>
-</div>
-
 <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="height: 75vh; background: #0a0a0a;">
     <iframe src="/bot-interno/?sessao={{ session.estabelecimento_id }}" width="100%" height="100%" style="border: none;">
         O seu navegador não suporta iframes.

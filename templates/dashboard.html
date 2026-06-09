@@ -3,7 +3,9 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4 mt-2">
     <h4 class="mb-4 fw-bold saudacao-topo">Olá, {{ dados.nome_estabelecimento }}! 👋</h4>
-    <span class="badge bg-success rounded-pill px-3 py-2 shadow-sm"><i class="fa-solid fa-robot"></i> Bot Online</span>
+    <span id="badge-bot-status" class="badge bg-secondary rounded-pill px-3 py-2 shadow-sm" style="transition: all 0.3s;">
+        <i class="fa-solid fa-spinner fa-spin"></i> Verificando Bot...
+    </span>
 </div>
 
 <!-- Cartões de Resumo (Cards) -->
@@ -142,4 +144,44 @@
 
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const sessaoId = "{{ session.estabelecimento_id }}";
+        const badge = document.getElementById("badge-bot-status");
+
+        function checkBotStatus() {
+            // Usa o túnel interno que criamos
+            fetch(`/bot-interno/api/bot/status?sessao=${sessaoId}`)
+                .then(response => response.json())
+                .then(data => {
+                    badge.className = "badge rounded-pill px-3 py-2 shadow-sm"; // Limpa as cores antigas
+                    
+                    if (data.status === 'connected') {
+                        badge.classList.add('bg-success');
+                        badge.innerHTML = '<i class="fa-solid fa-robot"></i> Bot Online';
+                    } 
+                    else if (data.status === 'waiting_qr' || data.status === 'starting' || data.status === 'authenticated') {
+                        badge.classList.add('bg-warning', 'text-dark');
+                        badge.innerHTML = '<i class="fa-solid fa-qrcode"></i> Aguardando Leitura';
+                    } 
+                    else {
+                        badge.classList.add('bg-danger');
+                        badge.innerHTML = '<i class="fa-solid fa-power-off"></i> Bot Offline';
+                    }
+                })
+                .catch(error => {
+                    badge.className = "badge bg-secondary rounded-pill px-3 py-2 shadow-sm";
+                    badge.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Status Indisponível';
+                });
+        }
+
+        // Verifica o status assim que entra na tela
+        checkBotStatus();
+        
+        // Fica checando sozinho a cada 10 segundos para manter sempre atualizado
+        setInterval(checkBotStatus, 10000);
+    });
+</script>
+
 {% endblock %}

@@ -1,4 +1,4 @@
-from flask import Flask, redirect, render_template, request, url_for, session, flash
+from flask import Flask, redirect, render_template, request, url_for, session, flash, jsonify
 from models import db, Estabelecimento, Servico, Agendamento, Cliente, Pacote, ClientePacote, ConfigHorario
 from datetime import datetime
 from functools import wraps
@@ -382,6 +382,68 @@ def meu_bot():
         "nome_estabelecimento": session.get('estabelecimento_nome')
     }
     return render_template('meu_bot.html', dados=dados_dinamicos)
+
+@app.route('/api/bot/check-cliente', methods=['POST'])
+def bot_check_cliente():
+    dados = request.json
+    manicure_id = dados.get('estabelecimento_id')
+    whatsapp = dados.get('whatsapp')
+
+    # Verifica se o cliente já existe no banco de dados
+    cliente = Cliente.query.filter_by(manicure_id=manicure_id, whatsapp=whatsapp).first()[cite: 4]
+    if cliente:
+        return jsonify({"registrado": True, "nome": cliente.nome})
+    
+    return jsonify({"registrado": False})
+
+@app.route('/api/bot/registrar-agendamento', methods=['POST'])
+def bot_registrar_agendamento():
+    dados = request.json
+    manicure_id = dados.get('estabelecimento_id')
+    whatsapp = dados.get('whatsapp')
+    nome = dados.get('nome')
+    servico_nome = dados.get('servico')
+    
+    # O robô envia "Sex 25/05". Vamos quebrar para pegar o dia e o mês.
+    data_str = dados.get('data') 
+    hora_str = dados.get('hora') 
+
+    # 1. Cadastra ou recupera a Cliente
+    cliente = Cliente.query.filter_by(manicure_id=manicure_id, whatsapp=whatsapp).first()[cite: 4]
+    if not cliente:
+        cliente = Cliente(manicure_id=manicure_id, nome=nome, whatsapp=whatsapp)[cite: 4]
+        db.session.add(cliente)
+        db.session.flush() # Salva temporariamente para gerar o ID do cliente
+
+    # 2. Identifica o ID do Serviço (se houver)
+    servico = Servico.query.filter_by(manicure_id=manicure_id, nome_servico=servico_nome).first() if servico_nome else None[cite: 4]
+    servico_id = servico.id if servico else None
+
+    # 3. Formata a Data e Hora para o SQLAlchemy salvar corretamente
+    try:
+        # Ex: Pega "25" e "05" de "Sex 25/05"
+        dia, mes = map(int, data_str.split(' ')[1].split('/'))
+        ano = datetime.now().year
+        hora, minuto = map(int, hora_str.split(':'))
+        data_hora_final = datetime(ano, mes, dia, hora, minuto)
+    except:
+        # Em caso de erro na conversão da string, usa a data atual como fallback
+        data_hora_final = datetime.now()
+
+    # 4. Salva o Agendamento no Painel
+    novo_agendamento = Agendamento(
+        manicure_id=manicure_id,[cite: 4]
+        cliente_id=cliente.id,[cite: 4]
+        servico_id=servico_id,[cite: 4]
+        data_hora=data_hora_final,[cite: 4]
+        status="Agendado",[cite: 4]
+        tipo_pagamento="Avulso",[cite: 4]
+        pago=False[cite: 4]
+    )
+    db.session.add(novo_agendamento)
+    db.session.commit()
+
+    return jsonify({"status": "sucesso"})
 
 @app.route('/logout')
 def logout():

@@ -432,13 +432,13 @@ def bot_registrar_agendamento():
 
     # 4. Salva o Agendamento no Painel
     novo_agendamento = Agendamento(
-        manicure_id=manicure_id,[cite: 4]
-        cliente_id=cliente.id,[cite: 4]
-        servico_id=servico_id,[cite: 4]
-        data_hora=data_hora_final,[cite: 4]
-        status="Agendado",[cite: 4]
-        tipo_pagamento="Avulso",[cite: 4]
-        pago=False[cite: 4]
+        manicure_id=manicure_id,
+        cliente_id=cliente.id,
+        servico_id=servico_id,
+        data_hora=data_hora_final,
+        status="Agendado",
+        tipo_pagamento="Avulso",
+        pago=False
     )
     db.session.add(novo_agendamento)
     db.session.commit()

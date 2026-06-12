@@ -396,6 +396,25 @@ def bot_check_cliente():
     
     return jsonify({"registrado": False})
 
+@app.route('/api/bot/servicos', methods=['GET'])
+def get_bot_servicos():
+    estabelecimento_id = request.args.get('estabelecimento_id')
+    if not estabelecimento_id:
+        return jsonify({"erro": "estabelecimento_id nao informado"}), 400
+        
+    servicos = Servico.query.filter_by(estabelecimento_id=estabelecimento_id).all()[cite: 5, 6]
+    
+    lista_servicos = []
+    for s in servicos:
+        lista_servicos.append({
+            "id": s.id,
+            "nome": s.nome_servico,
+            "valor": s.valor,
+            "duracao": s.duracao_minutos
+        })[cite: 6]
+        
+    return jsonify({"servicos": lista_servicos})
+
 @app.route('/api/bot/registrar-agendamento', methods=['POST'])
 def bot_registrar_agendamento():
     dados = request.json

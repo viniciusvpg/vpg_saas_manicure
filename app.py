@@ -402,17 +402,15 @@ def get_bot_servicos():
     if not estabelecimento_id:
         return jsonify({"erro": "estabelecimento_id nao informado"}), 400
         
-    servicos = Servico.query.filter_by(estabelecimento_id=estabelecimento_id).all()[cite: 5, 6]
-    
-    lista_servicos = []
-    for s in servicos:
-        lista_servicos.append({
-            "id": s.id,
-            "nome": s.nome_servico,
-            "valor": s.valor,
-            "duracao": s.duracao_minutos
-        })
+    try:
+        # Garante que seja um número inteiro para o banco de dados
+        est_id = int(estabelecimento_id)
+    except:
+        return jsonify({"servicos": []})
         
+    servicos = Servico.query.filter_by(estabelecimento_id=est_id).all()
+    lista_servicos = [{"id": s.id, "nome": s.nome_servico, "valor": s.valor, "duracao": s.duracao_minutos} for s in servicos]
+    
     return jsonify({"servicos": lista_servicos})
 
 @app.route('/api/bot/registrar-agendamento', methods=['POST'])

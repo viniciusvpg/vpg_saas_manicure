@@ -411,51 +411,41 @@ def get_bot_servicos():
             "nome": s.nome_servico,
             "valor": s.valor,
             "duracao": s.duracao_minutos
-        })[cite: 6]
+        })
         
     return jsonify({"servicos": lista_servicos})
 
 @app.route('/api/bot/registrar-agendamento', methods=['POST'])
 def bot_registrar_agendamento():
     dados = request.json
-    manicure_id = dados.get('estabelecimento_id')
+    estabelecimento_id = dados.get('estabelecimento_id')
     whatsapp = dados.get('whatsapp')
     nome = dados.get('nome')
-    servico_nome = dados.get('servico')
+    servico_id = dados.get('servico_id')
     
-    # O robô envia "Sex 25/05". Vamos quebrar para pegar o dia e o mês.
     data_str = dados.get('data') 
     hora_str = dados.get('hora') 
 
-    # 1. Cadastra ou recupera a Cliente
-    cliente = Cliente.query.filter_by(manicure_id=manicure_id, whatsapp=whatsapp).first()[cite: 4]
+    cliente = Cliente.query.filter_by(estabelecimento_id=estabelecimento_id, whatsapp=whatsapp).first()
     if not cliente:
-        cliente = Cliente(manicure_id=manicure_id, nome=nome, whatsapp=whatsapp)[cite: 4]
+        cliente = Cliente(estabelecimento_id=estabelecimento_id, nome=nome, whatsapp=whatsapp)
         db.session.add(cliente)
-        db.session.flush() # Salva temporariamente para gerar o ID do cliente
+        db.session.flush()
 
-    # 2. Identifica o ID do Serviço (se houver)
-    servico = Servico.query.filter_by(manicure_id=manicure_id, nome_servico=servico_nome).first() if servico_nome else None[cite: 4]
-    servico_id = servico.id if servico else None
-
-    # 3. Formata a Data e Hora para o SQLAlchemy salvar corretamente
     try:
-        # Ex: Pega "25" e "05" de "Sex 25/05"
         dia, mes = map(int, data_str.split(' ')[1].split('/'))
         ano = datetime.now().year
         hora, minuto = map(int, hora_str.split(':'))
         data_hora_final = datetime(ano, mes, dia, hora, minuto)
     except:
-        # Em caso de erro na conversão da string, usa a data atual como fallback
         data_hora_final = datetime.now()
 
-    # 4. Salva o Agendamento no Painel
     novo_agendamento = Agendamento(
-        manicure_id=manicure_id,
+        estabelecimento_id=estabelecimento_id,
         cliente_id=cliente.id,
         servico_id=servico_id,
         data_hora=data_hora_final,
-        status="Agendado",
+        status="Confirmado", # Já entra como confirmado no Dashboard
         tipo_pagamento="Avulso",
         pago=False
     )
@@ -463,6 +453,76 @@ def bot_registrar_agendamento():
     db.session.commit()
 
     return jsonify({"status": "sucesso"})
+
+@app.route('/api/bot/horarios-livres', methods=['POST'])
+def bot_horarios_livres():
+    from datetime import timedelta
+    dados = request.json
+    est_id = int(dados.get('estabelecimento_id'))
+    servico_id = int(dados.get('servico_id'))
+    data_str = dados.get('data') 
+    
+    try:
+        dia, mes = map(int, data_str.split(' ')[1].split('/'))
+        ano = datetime.now().year
+        data_foco = datetime(ano, mes, dia)
+    except:
+        return jsonify({"horarios": []})
+        
+    dia_semana = data_foco.weekday()
+    
+    config = ConfigHorario.query.filter_by(estabelecimento_id=est_id, dia_semana=dia_semana, ativo=True).first()
+    servico = Servico.query.get(servico_id)
+    
+    if not config or not servico:
+        return jsonify({"horarios": []})
+        
+    duracao_servico = timedelta(minutes=servico.duracao_minutos)
+    
+    inicio_dia = data_foco.replace(hour=0, minute=0, second=0)
+    fim_dia = data_foco.replace(hour=23, minute=59, second=59)
+    agendamentos_dia = Agendamento.query.filter(
+        Agendamento.estabelecimento_id == est_id,
+        Agendamento.data_hora >= inicio_dia,
+        Agendamento.data_hora <= fim_dia,
+        Agendamento.status != "Não Compareceu"
+    ).all()
+    
+    atual = data_foco.replace(hour=int(config.hora_inicio.split(':')[0]), minute=int(config.hora_inicio.split(':')[1]))
+    limite = data_foco.replace(hour=int(config.hora_fim.split(':')[0]), minute=int(config.hora_fim.split(':')[1]))
+    
+    if config.almoco_inicio and config.almoco_fim:
+        alm_ini = data_foco.replace(hour=int(config.almoco_inicio.split(':')[0]), minute=int(config.almoco_inicio.split(':')[1]))
+        alm_fim = data_foco.replace(hour=int(config.almoco_fim.split(':')[0]), minute=int(config.almoco_fim.split(':')[1]))
+    else:
+        alm_ini = alm_fim = None
+
+    horarios_disponiveis = []
+    
+    while atual + duracao_servico <= limite:
+        slot_inicio = atual
+        slot_fim = atual + duracao_servico
+        
+        no_almoco = False
+        if alm_ini and alm_fim:
+            if (slot_inicio >= alm_ini and slot_inicio < alm_fim) or (slot_fim > alm_ini and slot_fim <= alm_fim) or (slot_inicio <= alm_ini and slot_fim >= alm_fim):
+                no_almoco = True
+        
+        conflito = False
+        for ag in agendamentos_dia:
+            ag_ini = ag.data_hora
+            duracao_ag = timedelta(minutes=ag.servico.duracao_minutos) if ag.servico else timedelta(minutes=30)
+            ag_fim = ag_ini + duracao_ag
+            if slot_inicio < ag_fim and slot_fim > ag_ini:
+                conflito = True
+                break
+                
+        if not no_almoco and not conflito:
+            horarios_disponiveis.append(slot_inicio.strftime("%H:%M"))
+            
+        atual += timedelta(minutes=30)
+        
+    return jsonify({"horarios": horarios_disponiveis})
 
 @app.route('/logout')
 def logout():

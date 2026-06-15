@@ -292,9 +292,10 @@
                     <label class="form-label small fw-bold text-muted mb-2">Cor Principal</label>
                     <form action="{{ url_for('atualizar_tema') }}" method="POST" class="mb-3 border-bottom pb-3">
                         <select name="tema" class="form-select form-select-sm" onchange="this.form.submit()">
-                            <option value="manicure" {% if session.get('nicho') == 'manicure' %}selected{% endif %}>💖 Rosa Clássico</option>
-                            <option value="barbearia" {% if session.get('nicho') == 'barbearia' %}selected{% endif %}>💛 Dourado Premium</option>
-                            <option value="tatuagem" {% if session.get('nicho') == 'tatuagem' %}selected{% endif %}>💜 Roxo Neon</option>
+                            <option value="azul_safira" {% if session.get('nicho') == 'azul_safira' %}selected{% endif %}>💙 Azul Safira</option>
+                            <option value="rosa_classico" {% if session.get('nicho') == 'rosa_classico' %}selected{% endif %}>💖 Rosa Clássico</option>
+                            <option value="dourado_premium" {% if session.get('nicho') == 'dourado_premium' %}selected{% endif %}>💛 Dourado Premium</option>
+                            <option value="roxo_neon" {% if session.get('nicho') == 'roxo_neon' %}selected{% endif %}>💜 Roxo Neon</option>
                         </select>
                     </form>
 

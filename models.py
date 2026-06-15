@@ -12,7 +12,7 @@ class Estabelecimento(db.Model): # Antiga classe Manicure
     ativo = db.Column(db.Boolean, default=True)
     
     # NOVO CAMPO: Define o tema do painel
-    nicho = db.Column(db.String(50), default='manicure')
+    nicho = db.Column(db.String(50), default='azul_safira')
     logo = db.Column(db.String(255), nullable=True) 
 
     # Relacionamentos

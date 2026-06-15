@@ -48,6 +48,8 @@ def dashboard():
     total_atendimentos = len([a for a in agendamentos_hoje if a.status != 'Não Compareceu'])
     faturamento_est = sum(a.servico.valor for a in agendamentos_hoje if a.status != 'Não Compareceu')
 
+    total_agendamentos_geral = Agendamento.query.filter_by(estabelecimento_id=estabelecimento_id_logado).count()
+
     proximo_id = None
     for a in agendamentos_hoje:
         if a.data_hora > hoje and a.status == 'Confirmado':
@@ -70,7 +72,7 @@ def dashboard():
     dados_dinamicos = {
         "nome_estabelecimento": session['estabelecimento_nome'], 
         "agendamentos_hoje": total_atendimentos,
-        "novos_bot": len([a for a in agendamentos_hoje if a.status == 'Confirmado']),
+        "total_agendamentos": total_agendamentos_geral,
         "faturamento_est": faturamento_est,
         "agenda_hoje": agenda_hoje
     }
@@ -84,9 +86,39 @@ def concluir_agendamento(id):
     agendamento = Agendamento.query.get_or_404(id)
     agendamento.status = 'Concluído'
     agendamento.pago = True 
-    db.session.commit()
     
+    # Captura o valor customizado vindo do modal
+    valor_editado = request.form.get('valor_final')
+    if valor_editado:
+        agendamento.valor_final = float(valor_editado.replace(',', '.'))
+        
+    db.session.commit()
     return redirect(url_for('agenda', data=agendamento.data_hora.strftime('%Y-%m-%d')))
+
+@app.route('/cliente/editar/<int:id>', methods=['POST'])
+def editar_cliente(id):
+    if 'estabelecimento_id' not in session: return redirect(url_for('login'))
+    cliente = Cliente.query.get_or_404(id)
+    cliente.nome = request.form.get('nome')
+    db.session.commit()
+    return redirect(url_for('clientes'))
+
+@app.route('/servicos/editar/<int:id>', methods=['POST'])
+def editar_servico(id):
+    if 'estabelecimento_id' not in session: return redirect(url_for('login'))
+    servico = Servico.query.get_or_404(id)
+    servico.nome_servico = request.form.get('nome_servico')
+    servico.valor = float(request.form.get('valor').replace(',', '.'))
+    db.session.commit()
+    return redirect(url_for('servicos'))
+
+@app.route('/servicos/toggle/<int:id>', methods=['POST'])
+def toggle_servico(id):
+    if 'estabelecimento_id' not in session: return redirect(url_for('login'))
+    servico = Servico.query.get_or_404(id)
+    servico.ativo = not servico.ativo
+    db.session.commit()
+    return redirect(url_for('servicos'))
 
 @app.route('/agenda/cancelar/<int:id>', methods=['POST'])
 def cancelar_agendamento(id):
@@ -332,7 +364,7 @@ def atualizar_tema():
     novo_tema = request.form.get('tema')
     
     # Valida se o tema escolhido é um dos permitidos
-    if novo_tema in ['manicure', 'barbearia', 'tatuagem']:
+    if novo_tema in ['manicure', 'barbearia', 'tatuagem', 'azul_safira', 'dourado_premium']:
         estabelecimento = Estabelecimento.query.get(session['estabelecimento_id'])
         estabelecimento.nicho = novo_tema
         db.session.commit()
@@ -386,47 +418,47 @@ def meu_bot():
 @app.route('/api/bot/check-cliente', methods=['POST'])
 def bot_check_cliente():
     dados = request.json
-    manicure_id = dados.get('estabelecimento_id')
-    whatsapp = dados.get('whatsapp')
+    try: est_id = int(dados.get('estabelecimento_id'))
+    except: return jsonify({"registrado": False})
+        
+    # Limpa o sufixo @c.us ou @lid
+    whatsapp = dados.get('whatsapp', '').split('@')[0]
 
-    # Verifica se o cliente já existe no banco de dados
-    cliente = Cliente.query.filter_by(manicure_id=manicure_id, whatsapp=whatsapp).first()[cite: 4]
-    if cliente:
-        return jsonify({"registrado": True, "nome": cliente.nome})
-    
+    cliente = Cliente.query.filter_by(estabelecimento_id=est_id, whatsapp=whatsapp).first()
+    if cliente: return jsonify({"registrado": True, "nome": cliente.nome})
     return jsonify({"registrado": False})
 
 @app.route('/api/bot/servicos', methods=['GET'])
 def get_bot_servicos():
     estabelecimento_id = request.args.get('estabelecimento_id')
-    if not estabelecimento_id:
-        return jsonify({"erro": "estabelecimento_id nao informado"}), 400
+    try: est_id = int(estabelecimento_id)
+    except: return jsonify({"servicos": []})
         
-    try:
-        # Garante que seja um número inteiro para o banco de dados
-        est_id = int(estabelecimento_id)
-    except:
-        return jsonify({"servicos": []})
-        
-    servicos = Servico.query.filter_by(estabelecimento_id=est_id).all()
+    # Filtra apenas os que estão ativos
+    servicos = Servico.query.filter_by(estabelecimento_id=est_id, ativo=True).all()
     lista_servicos = [{"id": s.id, "nome": s.nome_servico, "valor": s.valor, "duracao": s.duracao_minutos} for s in servicos]
-    
     return jsonify({"servicos": lista_servicos})
 
 @app.route('/api/bot/registrar-agendamento', methods=['POST'])
 def bot_registrar_agendamento():
     dados = request.json
-    estabelecimento_id = dados.get('estabelecimento_id')
-    whatsapp = dados.get('whatsapp')
-    nome = dados.get('nome')
-    servico_id = dados.get('servico_id')
+    try: est_id = int(dados.get('estabelecimento_id'))
+    except: return jsonify({"erro": "ID invalido"}), 400
+        
+    # Limpa o sufixo
+    whatsapp = dados.get('whatsapp', '').split('@')[0]
+    nome = dados.get('nome') 
     
+    if not nome or nome == 'Não informado':
+        nome = f"Cliente {whatsapp[-4:]}"
+        
+    servico_id = dados.get('servico_id')
     data_str = dados.get('data') 
     hora_str = dados.get('hora') 
 
-    cliente = Cliente.query.filter_by(estabelecimento_id=estabelecimento_id, whatsapp=whatsapp).first()
+    cliente = Cliente.query.filter_by(estabelecimento_id=est_id, whatsapp=whatsapp).first()
     if not cliente:
-        cliente = Cliente(estabelecimento_id=estabelecimento_id, nome=nome, whatsapp=whatsapp)
+        cliente = Cliente(estabelecimento_id=est_id, nome=nome, whatsapp=whatsapp)
         db.session.add(cliente)
         db.session.flush()
 
@@ -439,11 +471,11 @@ def bot_registrar_agendamento():
         data_hora_final = datetime.now()
 
     novo_agendamento = Agendamento(
-        estabelecimento_id=estabelecimento_id,
+        estabelecimento_id=est_id,
         cliente_id=cliente.id,
         servico_id=servico_id,
         data_hora=data_hora_final,
-        status="Confirmado", # Já entra como confirmado no Dashboard
+        status="Confirmado",
         tipo_pagamento="Avulso",
         pago=False
     )

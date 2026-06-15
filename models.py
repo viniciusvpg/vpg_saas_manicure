@@ -27,6 +27,7 @@ class Servico(db.Model):
     nome_servico = db.Column(db.String(100), nullable=False)
     valor = db.Column(db.Float, nullable=False)
     duracao_minutos = db.Column(db.Integer, nullable=False) # Ex: 90 para 1h30m
+    ativo = db.Column(db.Boolean, default=True)
 
 class Cliente(db.Model):
     __tablename__ = 'clientes'
@@ -48,6 +49,7 @@ class Agendamento(db.Model):
     status = db.Column(db.String(20), default='Agendado') # 'Agendado', 'Concluído', 'Não Compareceu'
     tipo_pagamento = db.Column(db.String(20), default='Avulso') # 'Avulso' ou 'Pacote'
     pago = db.Column(db.Boolean, default=False)
+    valor_final = db.Column(db.Float, nullable=True)
 
     cliente = db.relationship('Cliente', backref='historico_agendamentos', lazy=True)
     servico = db.relationship('Servico', backref='agendamentos_deste_servico', lazy=True)
@@ -59,6 +61,7 @@ class Pacote(db.Model):
     nome_pacote = db.Column(db.String(100), nullable=False) # Ex: Combo 4x Mão
     valor_total = db.Column(db.Float, nullable=False)       # Ex: R$ 100,00
     qtd_sessoes = db.Column(db.Integer, nullable=False)     # Ex: 4 sessões
+    ativo = db.Column(db.Boolean, default=True)
     
     # Opcional: Atrelar o pacote a um serviço específico (Ex: Só vale para "Pé e Mão")
     servico_id = db.Column(db.Integer, db.ForeignKey('servicos.id'), nullable=True) 

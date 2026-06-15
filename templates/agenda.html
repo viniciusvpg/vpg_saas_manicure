@@ -125,3 +125,9 @@
     </div>
 </div>
 {% endblock %}
+
+<form action="{{ url_for('concluir_agendamento', id=a.id) }}" method="POST">
+    <label>Valor Final (R$):</label>
+    <input type="text" name="valor_final" value="{{ a.valor_real }}" class="form-control mb-2">
+    <button type="submit" class="btn btn-success">Confirmar Pagamento</button>
+</form>

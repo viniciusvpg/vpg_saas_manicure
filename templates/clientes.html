@@ -7,7 +7,7 @@
         <i class="fa-solid fa-user-plus me-1"></i> Cadastrar Cliente
     </button>
 </div>
-
+<input type="text" id="buscaCliente" placeholder="Buscar cliente por nome..." class="form-control mb-3" onkeyup="filtrarClientes()">
 <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
@@ -118,4 +118,14 @@
         </div>
     </div>
 </div>
+
 {% endblock %}
+
+function filtrarClientes() {
+    let input = document.getElementById('buscaCliente').value.toLowerCase();
+    let linhas = document.querySelectorAll('tbody tr');
+    linhas.forEach(linha => {
+        let nome = linha.cells[0].textContent.toLowerCase();
+        linha.style.display = nome.includes(input) ? '' : 'none';
+    });
+}

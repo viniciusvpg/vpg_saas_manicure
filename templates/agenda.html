@@ -52,11 +52,11 @@
                 <div class="d-flex gap-2 align-items-center mt-3 mt-md-0 w-100 justify-content-md-end" style="justify-content: flex-end;">
                     
                     {% if agendamento.status == 'Confirmado' or agendamento.status == 'Agendado' %}
-                        <form action="{{ url_for('concluir_agendamento', id=agendamento.id) }}" method="POST" class="m-0">
-                            <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3" title="Confirmar Pagamento">
-                                <i class="fa-solid fa-check me-1"></i> Pago
-                            </button>
-                        </form>
+                        <!-- Botão que abre a Janela de Pagamento -->
+                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalPagarAgenda{{ agendamento.id }}" title="Confirmar Pagamento">
+                            <i class="fa-solid fa-check me-1"></i> Pago
+                        </button>
+
                         <form action="{{ url_for('cancelar_agendamento', id=agendamento.id) }}" method="POST" class="m-0">
                             <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" title="Registrar Falta">
                                 <i class="fa-solid fa-xmark me-1"></i> Falta
@@ -68,8 +68,31 @@
                         <i class="fa-brands fa-whatsapp fa-lg"></i>
                     </a>
                 </div>
-                
             </div>
+
+            <!-- Modal para Editar Valor e Confirmar Pagamento -->
+            <div class="modal fade" id="modalPagarAgenda{{ agendamento.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 rounded-4 shadow">
+                        <div class="modal-header border-0 pb-0">
+                            <h6 class="modal-title fw-bold">Confirmar Pagamento</h6>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="{{ url_for('concluir_agendamento', id=agendamento.id) }}" method="POST">
+                            <div class="modal-body text-start">
+                                <label class="form-label small fw-bold text-muted">Valor Final Cobrado (R$)</label>
+                                <input type="text" name="valor_final" value="{{ agendamento.servico.valor }}" class="form-control rounded-3" required>
+                                <small class="text-muted mt-1" style="font-size: 0.75rem;">Você pode alterar este valor se houve desconto ou acréscimo.</small>
+                            </div>
+                            <div class="modal-footer border-0 pt-0">
+                                <button type="button" class="btn btn-light rounded-pill px-3 btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-success rounded-pill px-4 btn-sm">Confirmar Pagamento</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             {% else %}
             <div class="text-center p-5 text-muted">
                 <i class="fa-regular fa-calendar-xmark d-block fa-2xl mb-3 text-black-50"></i>
@@ -89,7 +112,6 @@
             </div>
             <form action="{{ url_for('agenda') }}" method="POST">
                 <div class="modal-body">
-                    
                     <div class="mb-3">
                         <label for="cliente_id" class="form-label small fw-bold text-muted">Selecione a Cliente</label>
                         <select class="form-select rounded-3" id="cliente_id" name="cliente_id" required>
@@ -114,7 +136,6 @@
                         <label for="data_hora" class="form-label small fw-bold text-muted">Data e Horário</label>
                         <input type="datetime-local" class="form-control rounded-3" id="data_hora" name="data_hora" required>
                     </div>
-
                 </div>
                 <div class="modal-footer border-0 pt-0">
                     <button type="button" class="btn btn-light rounded-pill px-3 btn-sm" data-bs-dismiss="modal">Cancelar</button>
@@ -125,9 +146,3 @@
     </div>
 </div>
 {% endblock %}
-
-<form action="{{ url_for('concluir_agendamento', id=a.id) }}" method="POST">
-    <label>Valor Final (R$):</label>
-    <input type="text" name="valor_final" value="{{ a.valor_real }}" class="form-control mb-2">
-    <button type="submit" class="btn btn-success">Confirmar Pagamento</button>
-</form>

@@ -7,7 +7,10 @@
         <i class="fa-solid fa-user-plus me-1"></i> Cadastrar Cliente
     </button>
 </div>
-<input type="text" id="buscaCliente" placeholder="Buscar cliente por nome..." class="form-control mb-3" onkeyup="filtrarClientes()">
+
+<!-- Campo de Busca Dinâmica -->
+<input type="text" id="buscaCliente" placeholder="Buscar cliente por nome..." class="form-control mb-3 rounded-pill px-4" onkeyup="filtrarClientes()">
+
 <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
@@ -40,6 +43,10 @@
                         {% endif %}
                     </td>
                     <td class="text-center">
+                        <button type="button" class="btn btn-link text-primary p-0 px-2" data-bs-toggle="modal" data-bs-target="#modalEditar{{ cliente.id }}" title="Editar Nome do Cliente">
+                            <i class="fa-solid fa-pen fa-lg"></i>
+                        </button>
+
                         <button type="button" class="btn btn-link text-dark p-0 px-2" data-bs-toggle="modal" data-bs-target="#modalVender{{ cliente.id }}" title="Vender Combo">
                             <i class="fa-solid fa-cart-plus fa-lg text-secondary"></i>
                         </button>
@@ -50,6 +57,7 @@
                     </td>
                 </tr>
 
+                <!-- Modal de Venda de Combo -->
                 <div class="modal fade" id="modalVender{{ cliente.id }}" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content border-0 rounded-4 shadow">
@@ -79,6 +87,30 @@
                     </div>
                 </div>
 
+                <!-- Modal para Editar Cliente -->
+                <div class="modal fade" id="modalEditar{{ cliente.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 rounded-4 shadow">
+                            <div class="modal-header border-0 pb-0">
+                                <h6 class="modal-title fw-bold">Editar Cliente</h6>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form action="{{ url_for('editar_cliente', id=cliente.id) }}" method="POST">
+                                <div class="modal-body text-start">
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold text-muted">Nome da Cliente</label>
+                                        <input type="text" class="form-control rounded-3" name="nome" value="{{ cliente.nome }}" required>
+                                    </div>
+                                </div>
+                                <div class="modal-footer border-0 pt-0">
+                                    <button type="button" class="btn btn-light rounded-pill px-3 btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-primary rounded-pill px-4 btn-sm">Salvar Alterações</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
                 {% else %}
                 <tr>
                     <td colspan="4" class="text-center p-4 text-muted">
@@ -92,6 +124,7 @@
     </div>
 </div>
 
+<!-- Modal para Novo Cliente -->
 <div class="modal fade" id="modalNovoCliente" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 rounded-4 shadow">
@@ -119,13 +152,16 @@
     </div>
 </div>
 
-{% endblock %}
+<script>
+    // Agora o Javascript está isolado corretamente dentro do bloco content!
+    function filtrarClientes() {
+        let input = document.getElementById('buscaCliente').value.toLowerCase();
+        let linhas = document.querySelectorAll('tbody tr');
+        linhas.forEach(linha => {
+            let nome = linha.cells[0].textContent.toLowerCase();
+            linha.style.display = nome.includes(input) ? '' : 'none';
+        });
+    }
+</script>
 
-function filtrarClientes() {
-    let input = document.getElementById('buscaCliente').value.toLowerCase();
-    let linhas = document.querySelectorAll('tbody tr');
-    linhas.forEach(linha => {
-        let nome = linha.cells[0].textContent.toLowerCase();
-        linha.style.display = nome.includes(input) ? '' : 'none';
-    });
-}
+{% endblock %}

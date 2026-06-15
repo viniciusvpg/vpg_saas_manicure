@@ -16,18 +16,18 @@
             <div class="card-body text-center p-3">
                 <h6 class="text-muted mb-1" style="font-size: 0.85rem;">Para Hoje</h6>
                 <h3 class="mb-0 fw-bold text-dark">{{ dados.agendamentos_hoje }}</h3>
-                <small class="text-success" style="font-size: 0.75rem;"><i class="fa-solid fa-arrow-trend-up"></i> Agendados</small>
+                <small class="text-success" style="font-size: 0.75rem;"><i class="fa-solid fa-bolt"></i> Agendados</small>
             </div>
         </div>
     </div>
     
-    <!-- Card Bot -->
+    <!-- Card Bot / Total -->
     <div class="col-6 col-md-3">
         <div class="card border-0 shadow-sm h-100 rounded-4">
             <div class="card-body text-center p-3">
-                <h6 class="text-muted mb-1" style="font-size: 0.85rem;">Novos</h6>
-                <h3 class="mb-0 fw-bold text-dark">2</h3>
-                <small class="text-primary" style="font-size: 0.75rem;"><i class="fa-solid fa-bolt"></i> Pelo Bot</small>
+                <h6 class="text-muted mb-1" style="font-size: 0.85rem;">Total Geral</h6>
+                <h3 class="mb-0 fw-bold text-dark">{{ dados.total_agendamentos }}</h3>
+                <small class="text-primary" style="font-size: 0.75rem;"><i class="fa-solid fa-arrow-trend-up"></i> Agendamentos</small>
             </div>
         </div>
     </div>
@@ -53,28 +53,6 @@
     </div>
     <div class="card-body p-0">
         <div class="list-group list-group-flush">
-        {% for cliente in dados.proximos_clientes %}
-        <div class="list-group-item d-flex justify-content-between align-items-center p-3 border-light">
-            <div class="d-flex align-items-center">
-                <div class="bg-light rounded-3 p-2 text-center me-3 border" style="min-width: 65px;">
-                    <span class="d-block fw-bold text-dark" style="font-size: 1.1rem;">{{ cliente.hora }}</span>
-                </div>
-                <div>
-                    <h6 class="mb-0 fw-bold text-dark">{{ cliente.nome }}</h6>
-                    <small class="text-muted">{{ cliente.servico }}</small>
-                </div>
-            </div>
-            <a href="https://wa.me/{{ cliente.telefone }}" target="_blank" class="btn btn-sm btn-outline-success rounded-circle p-2">
-                <i class="fa-brands fa-whatsapp fa-lg"></i>
-            </a>
-        </div>
-        {% endfor %}
-    </div>
-
-    <div class="mt-4">
-
-        <div class="list-group list-group-flush">
-            
             {% for cliente in dados.agenda_hoje %}
             <div class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center p-3 border-light 
                 {% if cliente.status != 'Confirmado' %}opacity-50 bg-light{% endif %}
@@ -113,11 +91,11 @@
                 
                 <div class="d-flex gap-2 align-items-center mt-3 mt-md-0 w-100 justify-content-md-end" style="justify-content: flex-end;">
                     {% if cliente.status == 'Confirmado' %}
-                        <form action="{{ url_for('concluir_agendamento', id=cliente.id) }}" method="POST" class="m-0">
-                            <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3">
-                                <i class="fa-solid fa-check me-1"></i> Pago
-                            </button>
-                        </form>
+                        <!-- Botão que abre a Janela de Pagamento -->
+                        <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#modalPagarDash{{ cliente.id }}">
+                            <i class="fa-solid fa-check me-1"></i> Pago
+                        </button>
+                        
                         <form action="{{ url_for('cancelar_agendamento', id=cliente.id) }}" method="POST" class="m-0">
                             <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
                                 <i class="fa-solid fa-xmark me-1"></i> Falta
@@ -128,8 +106,31 @@
                         <i class="fa-brands fa-whatsapp fa-lg"></i>
                     </a>
                 </div>
-                
             </div>
+
+            <!-- Modal para Editar Valor e Confirmar Pagamento -->
+            <div class="modal fade" id="modalPagarDash{{ cliente.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 rounded-4 shadow">
+                        <div class="modal-header border-0 pb-0">
+                            <h6 class="modal-title fw-bold">Confirmar Pagamento</h6>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="{{ url_for('concluir_agendamento', id=cliente.id) }}" method="POST">
+                            <div class="modal-body text-start">
+                                <label class="form-label small fw-bold text-muted">Valor Final Cobrado (R$)</label>
+                                <input type="text" name="valor_final" value="{{ cliente.valor_real }}" class="form-control rounded-3" required>
+                                <small class="text-muted mt-1" style="font-size: 0.75rem;">Você pode alterar este valor se houve desconto ou acréscimo.</small>
+                            </div>
+                            <div class="modal-footer border-0 pt-0">
+                                <button type="button" class="btn btn-light rounded-pill px-3 btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-success rounded-pill px-4 btn-sm">Confirmar Pagamento</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
             {% else %}
             <div class="text-center p-5 text-muted">
                 <i class="fa-solid fa-mug-hot d-block fa-2xl mb-3 text-black-50"></i>
@@ -139,10 +140,6 @@
             
         </div>
     </div>
-
-    <div class="mt-4">
-
-    </div>
 </div>
 
 <script>
@@ -151,7 +148,6 @@
         const badge = document.getElementById("badge-bot-status");
 
         function checkBotStatus() {
-            // Usa o túnel interno que criamos
             fetch(`/bot-interno/api/bot/status?sessao=${sessaoId}`)
                 .then(response => response.json())
                 .then(data => {
@@ -175,19 +171,9 @@
                     badge.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> Status Indisponível';
                 });
         }
-
-        // Verifica o status assim que entra na tela
         checkBotStatus();
-        
-        // Fica checando sozinho a cada 10 segundos para manter sempre atualizado
         setInterval(checkBotStatus, 10000);
     });
 </script>
 
 {% endblock %}
-
-<form action="{{ url_for('concluir_agendamento', id=a.id) }}" method="POST">
-    <label>Valor Final (R$):</label>
-    <input type="text" name="valor_final" value="{{ a.valor_real }}" class="form-control mb-2">
-    <button type="submit" class="btn btn-success">Confirmar Pagamento</button>
-</form>

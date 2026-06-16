@@ -364,7 +364,7 @@ def atualizar_tema():
     novo_tema = request.form.get('tema')
     
     # Valida se o tema escolhido é um dos permitidos
-    if novo_tema in ['manicure', 'barbearia', 'tatuagem', 'azul_safira', 'dourado_premium']:
+    if novo_tema in ['azul_safira', 'rosa_classico', 'dourado_premium', 'roxo_neon']:
         estabelecimento = Estabelecimento.query.get(session['estabelecimento_id'])
         estabelecimento.nicho = novo_tema
         db.session.commit()

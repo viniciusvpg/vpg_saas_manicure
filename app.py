@@ -100,6 +100,7 @@ def editar_cliente(id):
     if 'estabelecimento_id' not in session: return redirect(url_for('login'))
     cliente = Cliente.query.get_or_404(id)
     cliente.nome = request.form.get('nome')
+    cliente.whatsapp = request.form.get('whatsapp')
     db.session.commit()
     return redirect(url_for('clientes'))
 

@@ -14,6 +14,7 @@
             <thead class="table-light">
                 <tr>
                     <th class="ps-3">Serviço</th>
+                    <th>Status</th>
                     <th>Duração</th>
                     <th>Preço</th>
                     <th class="text-center">Ações</th>
@@ -21,21 +22,69 @@
             </thead>
             <tbody>
                 {% for servico in servicos %}
-                <tr>
+                <tr class="{% if not servico.ativo %}opacity-50{% endif %}">
                     <td class="ps-3 fw-bold text-dark">{{ servico.nome_servico }}</td>
+                    <td>
+                        {% if servico.ativo %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">No Cardápio</span>
+                        {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill">Oculto</span>
+                        {% endif %}
+                    </td>
                     <td>
                         <span class="badge bg-light text-dark border">
                             <i class="fa-regular fa-clock me-1 text-muted"></i> {{ servico.duracao_minutos }} min
                         </span>
                     </td>
                     <td class="fw-bold text-success">R$ {{ "%.2f"|format(servico.valor)|replace('.', ',') }}</td>
-                    <td class="text-center">
-                        <button class="btn btn-link text-danger p-0 px-2"><i class="fa-regular fa-trash-can"></i></button>
+                    <td class="text-center d-flex justify-content-center gap-2">
+                        
+                        <form action="{{ url_for('toggle_servico', id=servico.id) }}" method="POST" class="m-0">
+                            <button type="submit" class="btn btn-link p-0 px-1" title="{% if servico.ativo %}Ocultar do Bot{% else %}Mostrar no Bot{% endif %}">
+                                {% if servico.ativo %}
+                                    <i class="fa-solid fa-eye-slash text-warning fa-lg"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-eye text-success fa-lg"></i>
+                                {% endif %}
+                            </button>
+                        </form>
+
+                        <button type="button" class="btn btn-link p-0 px-1 text-primary" data-bs-toggle="modal" data-bs-target="#modalEditarServico{{ servico.id }}" title="Editar Serviço">
+                            <i class="fa-solid fa-pen fa-lg"></i>
+                        </button>
                     </td>
                 </tr>
+
+                <div class="modal fade" id="modalEditarServico{{ servico.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 rounded-4 shadow">
+                            <div class="modal-header border-0 pb-0">
+                                <h6 class="modal-title fw-bold">Editar Serviço</h6>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form action="{{ url_for('editar_servico', id=servico.id) }}" method="POST">
+                                <div class="modal-body text-start">
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold text-muted">Nome do Serviço</label>
+                                        <input type="text" class="form-control rounded-3" name="nome_servico" value="{{ servico.nome_servico }}" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold text-muted">Preço (R$)</label>
+                                        <input type="text" class="form-control rounded-3" name="valor" value="{{ '%.2f'|format(servico.valor)|replace('.', ',') }}" required>
+                                    </div>
+                                    </div>
+                                <div class="modal-footer border-0 pt-0">
+                                    <button type="button" class="btn btn-light rounded-pill px-3 btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-primary rounded-pill px-4 btn-sm">Salvar Alterações</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
                 {% else %}
                 <tr>
-                    <td colspan="4" class="text-center p-4 text-muted">
+                    <td colspan="5" class="text-center p-4 text-muted">
                         <i class="fa-regular fa-folder-open d-block fa-2xl mb-2 text-black-50"></i>
                         Nenhum serviço cadastrado ainda.
                     </td>
@@ -46,27 +95,27 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalNovoServico" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="modalNovoServico" tabindex="-1" aria-labelledby="modalNovoServicoLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 rounded-4 shadow">
             <div class="modal-header border-0 pb-0">
-                <h6 class="modal-title fw-bold">Novo Serviço</h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h6 class="modal-title fw-bold" id="modalNovoServicoLabel">Cadastrar Novo Serviço</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form action="{{ url_for('servicos') }}" method="POST">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label small fw-bold text-muted">Nome do Serviço</label>
-                        <input type="text" class="form-control rounded-3" name="nome_servico" placeholder="Ex: Corte e Escova" required>
+                        <label for="nome_servico" class="form-label small fw-bold text-muted">Nome do Serviço</label>
+                        <input type="text" class="form-control rounded-3" id="nome_servico" name="nome_servico" placeholder="Ex: Pé e Mão, Manutenção de Gel..." required>
                     </div>
                     
                     <div class="row">
                         <div class="col-6 mb-3">
-                            <label class="form-label small fw-bold text-muted">Preço (R$)</label>
-                            <input type="text" class="form-control rounded-3" name="valor" placeholder="0,00" required>
+                            <label for="valor" class="form-label small fw-bold text-muted">Preço (R$)</label>
+                            <input type="text" class="form-control rounded-3" id="valor" name="valor" placeholder="0,00" required>
                         </div>
                         <div class="col-6 mb-3">
-                            <label class="form-label small fw-bold text-muted">Duração (Tempo)</label>
+                            <label for="duracao_minutos" class="form-label small fw-bold text-muted">Duração (Tempo)</label>
                             <input type="time" class="form-control rounded-3" name="duracao" required>
                         </div>
                     </div>

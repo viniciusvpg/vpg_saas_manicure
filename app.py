@@ -173,7 +173,9 @@ def servicos():
     if request.method == 'POST':
         nome = request.form.get('nome_servico')
         valor = float(request.form.get('valor').replace(',', '.'))
-        duracao = int(request.form.get('duracao_minutos'))
+        duracao_str = request.form.get('duracao') # "01:30"
+        horas, minutos = map(int, duracao_str.split(':'))
+        duracao = (horas * 60) + minutos
         
         novo_servico = Servico(
             estabelecimento_id=estabelecimento_id_logado,

@@ -46,40 +46,34 @@
     </div>
 </div>
 
-<div class="modal fade" id="modalNovoServico" tabindex="-1" aria-labelledby="modalNovoServicoLabel" aria-hidden="true">
+<div class="modal fade" id="modalNovoServico" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 rounded-4 shadow">
             <div class="modal-header border-0 pb-0">
-                <h6 class="modal-title fw-bold" id="modalNovoServicoLabel">Cadastrar Novo Serviço</h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <h6 class="modal-title fw-bold">Novo Serviço</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ url_for('servicos') }}" method="POST">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="nome_servico" class="form-label small fw-bold text-muted">Nome do Serviço</label>
-                        <input type="text" class="form-control rounded-3" id="nome_servico" name="nome_servico" placeholder="Ex: Pé e Mão, Manutenção de Gel..." required>
+                        <label class="form-label small fw-bold text-muted">Nome do Serviço</label>
+                        <input type="text" class="form-control rounded-3" name="nome_servico" placeholder="Ex: Corte e Escova" required>
                     </div>
                     
                     <div class="row">
                         <div class="col-6 mb-3">
-                            <label for="valor" class="form-label small fw-bold text-muted">Preço (R$)</label>
-                            <input type="text" class="form-control rounded-3" id="valor" name="valor" placeholder="0,00" required>
+                            <label class="form-label small fw-bold text-muted">Preço (R$)</label>
+                            <input type="text" class="form-control rounded-3" name="valor" placeholder="0,00" required>
                         </div>
                         <div class="col-6 mb-3">
-                            <label for="duracao_minutos" class="form-label small fw-bold text-muted">Duração (minutos)</label>
-                            <select class="form-select rounded-3" id="duracao_minutos" name="duracao_minutos" required>
-                                <option value="30">30 min</option>
-                                <option value="45">45 min</option>
-                                <option value="60" selected>1 hora</option>
-                                <option value="90">1h 30m</option>
-                                <option value="120">2 horas</option>
-                                <option value="150">2h 30m</option>
-                            </select>
+                            <label class="form-label small fw-bold text-muted">Duração (Horas:Minutos)</label>
+                            <input type="time" class="form-control rounded-3" name="duracao" required>
+                            <small class="text-muted" style="font-size: 0.7rem;">Ex: 01:30 para 1h e 30m</small>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0">
-                    <button type="button" class="btn btn-light rounded-pill px-3 btn-sm" data-bs-toggle="modal">Cancelar</button>
+                    <button type="button" class="btn btn-light rounded-pill px-3 btn-sm" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-dark rounded-pill px-4 btn-sm">Salvar Serviço</button>
                 </div>
             </form>

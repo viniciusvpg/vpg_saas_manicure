@@ -37,9 +37,9 @@
                     <thead class="table-light text-secondary">
                         <tr>
                             <th>ID</th>
-                            <th>Nome do Negócio</th>
-                            <th>WhatsApp Bot</th>
-                            <th>Nicho/Tema</th>
+                            <th>Negócio</th>
+                            <th>Nicho</th>
+                            <th>Plano / Vencimento</th>
                             <th>Status</th>
                             <th class="text-center">Ações</th>
                         </tr>
@@ -48,8 +48,10 @@
                         {% for e in estabelecimentos %}
                         <tr>
                             <td class="fw-bold">{{ e.id }}</td>
-                            <td>{{ e.nome }}</td>
-                            <td>{{ e.telefone_bot }}</td>
+                            <td>
+                                {{ e.nome }}<br>
+                                <small class="text-muted">{{ e.telefone_bot }}</small>
+                            </td>
                             <td>
                                 {% if e.nicho == 'manicure' %}
                                     <span class="badge" style="background-color: #e87ba4;">Salão / Manicure</span>
@@ -61,6 +63,20 @@
                                     <span class="badge bg-secondary">{{ e.nicho }}</span>
                                 {% endif %}
                             </td>
+                            
+                            <td>
+                                {% if e.plano == 'Trial' %}
+                                    <span class="badge bg-warning text-dark border border-warning">Trial 7 Dias</span>
+                                {% else %}
+                                    <span class="badge bg-primary">Premium</span>
+                                {% endif %}
+                                <br>
+                                <small class="text-muted fw-bold">
+                                    <i class="fa-regular fa-calendar me-1"></i> 
+                                    {{ e.data_vencimento.strftime('%d/%m/%Y') if e.data_vencimento else 'Sem data' }}
+                                </small>
+                            </td>
+
                             <td>
                                 {% if e.ativo %}
                                     <span class="badge bg-success">Ativo</span>
@@ -69,18 +85,28 @@
                                 {% endif %}
                             </td>
                             <td class="text-center">
-                                <div class="d-flex justify-content-center gap-2">
+                                <div class="d-flex justify-content-center align-items-center gap-2">
                                     
+                                    <form action="{{ url_for('mestre_renovar', id=e.id) }}" method="POST" class="d-flex gap-1 m-0">
+                                        <select name="meses" class="form-select form-select-sm rounded-pill" style="width: 90px; font-size: 0.8rem;">
+                                            <option value="1">1 Mês</option>
+                                            <option value="3">3 Meses</option>
+                                            <option value="6">6 Meses</option>
+                                            <option value="12">1 Ano</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-success rounded-pill px-3" title="Renovar Assinatura">Renovar</button>
+                                    </form>
+
                                     <form action="{{ url_for('toggle_estabelecimento', id=e.id) }}" method="POST" class="m-0">
                                         {% if e.ativo %}
-                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Desativar</button>
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" title="Desativar Acesso do Cliente">Desativar</button>
                                         {% else %}
-                                            <button type="submit" class="btn btn-sm btn-success rounded-pill px-3">Ativar</button>
+                                            <button type="submit" class="btn btn-sm btn-success rounded-pill px-3" title="Reativar Acesso">Ativar</button>
                                         {% endif %}
                                     </form>
 
-                                    <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3 text-dark fw-bold" data-bs-toggle="modal" data-bs-target="#modalSenha{{ e.id }}">
-                                        Senha
+                                    <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3 text-dark fw-bold" data-bs-toggle="modal" data-bs-target="#modalSenha{{ e.id }}" title="Mudar Senha">
+                                        <i class="fa-solid fa-key"></i>
                                     </button>
                                 </div>
 
@@ -141,21 +167,15 @@
                                 <option value="rosa_classico">💖 Rosa Clássico</option>
                                 <option value="dourado_premium">💛 Dourado Premium</option>
                                 <option value="roxo_neon">💜 Roxo Neon</option>
+                                <option value="barbearia">💈 Barbearia Dark</option>
+                                <option value="manicure">💅 Manicure Clássica</option>
                             </select>
                         </div>
                     </div>
                     <div class="modal-footer bg-light">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-dark fw-bold">Ativar Cliente</button>
+                        <button type="submit" class="btn btn-dark fw-bold">Ativar Cliente (7 Dias Trial)</button>
                     </div>
-                </form>
-                <form action="{{ url_for('mestre_renovar', id=empresa.id) }}" method="POST" class="d-flex gap-2">
-                    <select name="meses" class="form-select form-select-sm" style="width: 100px;">
-                        <option value="1">1 Mês</option>
-                        <option value="3">3 Meses</option>
-                        <option value="6">6 Meses</option>
-                    </select>
-                    <button type="submit" class="btn btn-sm btn-success">Renovar</button>
                 </form>
             </div>
         </div>

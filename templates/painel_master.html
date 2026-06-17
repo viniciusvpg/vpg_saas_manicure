@@ -6,6 +6,18 @@
     <title>Painel Master | VPG SaaS</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .bot-controls button {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: 0.2s;
+        }
+    </style>
 </head>
 <body class="bg-light">
 
@@ -33,107 +45,110 @@
                 </button>
             </div>
             <div class="card-body p-0">
-                <table class="table table-hover mb-0 align-middle">
-                    <thead class="table-light text-secondary">
-                        <tr>
-                            <th>ID</th>
-                            <th>Negócio</th>
-                            <th>Nicho</th>
-                            <th>Plano / Vencimento</th>
-                            <th>Status</th>
-                            <th class="text-center">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for e in estabelecimentos %}
-                        <tr>
-                            <td class="fw-bold">{{ e.id }}</td>
-                            <td>
-                                {{ e.nome }}<br>
-                                <small class="text-muted">{{ e.telefone_bot }}</small>
-                            </td>
-                            <td>
-                                {% if e.nicho == 'manicure' %}
-                                    <span class="badge" style="background-color: #e87ba4;">Salão / Manicure</span>
-                                {% elif e.nicho == 'barbearia' %}
-                                    <span class="badge text-dark" style="background-color: #daa520;">Barbearia</span>
-                                {% elif e.nicho == 'tatuagem' %}
-                                    <span class="badge" style="background-color: #8a2be2;">Tatuagem</span>
-                                {% else %}
-                                    <span class="badge bg-secondary">{{ e.nicho }}</span>
-                                {% endif %}
-                            </td>
-                            
-                            <td>
-                                {% if e.plano == 'Trial' %}
-                                    <span class="badge bg-warning text-dark border border-warning">Trial 7 Dias</span>
-                                {% else %}
-                                    <span class="badge bg-primary">Premium</span>
-                                {% endif %}
-                                <br>
-                                <small class="text-muted fw-bold">
-                                    <i class="fa-regular fa-calendar me-1"></i> 
-                                    {{ e.data_vencimento.strftime('%d/%m/%Y') if e.data_vencimento else 'Sem data' }}
-                                </small>
-                            </td>
-
-                            <td>
-                                {% if e.ativo %}
-                                    <span class="badge bg-success">Ativo</span>
-                                {% else %}
-                                    <span class="badge bg-danger">Suspenso</span>
-                                {% endif %}
-                            </td>
-                            <td class="text-center">
-                                <div class="d-flex justify-content-center align-items-center gap-2">
-                                    
-                                    <form action="{{ url_for('mestre_renovar', id=e.id) }}" method="POST" class="d-flex gap-1 m-0">
-                                        <select name="meses" class="form-select form-select-sm rounded-pill" style="width: 90px; font-size: 0.8rem;">
-                                            <option value="1">1 Mês</option>
-                                            <option value="3">3 Meses</option>
-                                            <option value="6">6 Meses</option>
-                                            <option value="12">1 Ano</option>
-                                        </select>
-                                        <button type="submit" class="btn btn-sm btn-success rounded-pill px-3" title="Renovar Assinatura">Renovar</button>
-                                    </form>
-
-                                    <form action="{{ url_for('toggle_estabelecimento', id=e.id) }}" method="POST" class="m-0">
-                                        {% if e.ativo %}
-                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" title="Desativar Acesso do Cliente">Desativar</button>
-                                        {% else %}
-                                            <button type="submit" class="btn btn-sm btn-success rounded-pill px-3" title="Reativar Acesso">Ativar</button>
-                                        {% endif %}
-                                    </form>
-
-                                    <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3 text-dark fw-bold" data-bs-toggle="modal" data-bs-target="#modalSenha{{ e.id }}" title="Mudar Senha">
-                                        <i class="fa-solid fa-key"></i>
-                                    </button>
-                                </div>
-
-                                <div class="modal fade" id="modalSenha{{ e.id }}" tabindex="-1">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content text-start">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title fw-bold">Nova senha para: {{ e.nome }}</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                            </div>
-                                            <form action="{{ url_for('mudar_senha_estabelecimento', id=e.id) }}" method="POST">
-                                                <div class="modal-body">
-                                                    <label class="form-label small fw-bold text-muted">Digite a nova senha</label>
-                                                    <input type="text" name="nova_senha" class="form-control" required>
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="submit" class="btn btn-warning fw-bold">Salvar Senha</button>
-                                                </div>
-                                            </form>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="table-light text-secondary">
+                            <tr>
+                                <th>ID</th>
+                                <th>Negócio</th>
+                                <th>Status do Bot / Controle</th>
+                                <th>Plano / Vencimento</th>
+                                <th>SaaS Status</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for e in estabelecimentos %}
+                            <tr>
+                                <td class="fw-bold">{{ e.id }}</td>
+                                <td>
+                                    {{ e.nome }}<br>
+                                    <small class="text-muted"><i class="fa-brands fa-whatsapp text-success"></i> {{ e.telefone_bot }}</small>
+                                </td>
+                                
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span id="badge-bot-{{ e.id }}" class="badge bg-secondary border border-secondary" style="width: 100px;">Verificando...</span>
+                                        
+                                        <div class="bot-controls d-flex gap-1">
+                                            <button onclick="controlarBot('{{ e.id }}', 'start')" class="btn btn-outline-success" title="Ligar Bot"><i class="fa-solid fa-play" style="font-size: 10px;"></i></button>
+                                            <button onclick="controlarBot('{{ e.id }}', 'stop')" class="btn btn-outline-danger" title="Desligar Bot"><i class="fa-solid fa-stop" style="font-size: 10px;"></i></button>
+                                            <button onclick="reiniciarBot('{{ e.id }}')" class="btn btn-outline-warning" title="Reiniciar Bot"><i class="fa-solid fa-rotate-right" style="font-size: 10px;"></i></button>
                                         </div>
                                     </div>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                </td>
+                                
+                                <td>
+                                    {% if e.plano == 'Trial' %}
+                                        <span class="badge bg-warning text-dark border border-warning">Trial 7 Dias</span>
+                                    {% else %}
+                                        <span class="badge bg-primary">Premium</span>
+                                    {% endif %}
+                                    <br>
+                                    <small class="text-muted fw-bold">
+                                        <i class="fa-regular fa-calendar me-1"></i> 
+                                        {{ e.data_vencimento.strftime('%d/%m/%Y') if e.data_vencimento else 'Sem data' }}
+                                    </small>
+                                </td>
+
+                                <td>
+                                    {% if e.ativo %}
+                                        <span class="badge bg-success">Ativo</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Suspenso</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center align-items-center gap-2">
+                                        
+                                        <form action="{{ url_for('mestre_renovar', id=e.id) }}" method="POST" class="d-flex gap-1 m-0">
+                                            <select name="meses" class="form-select form-select-sm rounded-pill" style="width: 90px; font-size: 0.8rem;">
+                                                <option value="1">1 Mês</option>
+                                                <option value="3">3 Meses</option>
+                                                <option value="6">6 Meses</option>
+                                                <option value="12">1 Ano</option>
+                                            </select>
+                                            <button type="submit" class="btn btn-sm btn-success rounded-pill px-3" title="Renovar Assinatura">Renovar</button>
+                                        </form>
+
+                                        <form action="{{ url_for('toggle_estabelecimento', id=e.id) }}" method="POST" class="m-0">
+                                            {% if e.ativo %}
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3" title="Desativar Acesso do Cliente">Desativar</button>
+                                            {% else %}
+                                                <button type="submit" class="btn btn-sm btn-success rounded-pill px-3" title="Reativar Acesso">Ativar</button>
+                                            {% endif %}
+                                        </form>
+
+                                        <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3 text-dark fw-bold" data-bs-toggle="modal" data-bs-target="#modalSenha{{ e.id }}" title="Mudar Senha">
+                                            <i class="fa-solid fa-key"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="modal fade" id="modalSenha{{ e.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content text-start">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title fw-bold">Nova senha para: {{ e.nome }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <form action="{{ url_for('mudar_senha_estabelecimento', id=e.id) }}" method="POST">
+                                                    <div class="modal-body">
+                                                        <label class="form-label small fw-bold text-muted">Digite a nova senha</label>
+                                                        <input type="text" name="nova_senha" class="form-control" required>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="submit" class="btn btn-warning fw-bold">Salvar Senha</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -180,5 +195,69 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Lista de todos os IDs de clientes gerados na tabela pelo Python
+            const sessoes = [
+                {% for e in estabelecimentos %} "{{ e.id }}", {% endfor %}
+            ];
+
+            // Função que varre a lista e pergunta para a API do bot como ele está
+            function verificarTodosBots() {
+                sessoes.forEach(sessaoId => {
+                    fetch(`/bot-interno/api/bot/status?sessao=${sessaoId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const badge = document.getElementById(`badge-bot-${sessaoId}`);
+                            if (!badge) return;
+
+                            if (data.status === 'connected') {
+                                badge.className = "badge bg-success";
+                                badge.innerHTML = '<i class="fa-solid fa-robot"></i> Online';
+                            } else if (data.status === 'waiting_qr' || data.status === 'starting' || data.status === 'authenticated') {
+                                badge.className = "badge bg-warning text-dark";
+                                badge.innerHTML = '<i class="fa-solid fa-qrcode"></i> Lendo QR...';
+                            } else {
+                                badge.className = "badge bg-danger";
+                                badge.innerHTML = '<i class="fa-solid fa-power-off"></i> Offline';
+                            }
+                        })
+                        .catch(error => {
+                            const badge = document.getElementById(`badge-bot-${sessaoId}`);
+                            if (badge) {
+                                badge.className = "badge bg-secondary";
+                                badge.innerHTML = 'Erro de API';
+                            }
+                        });
+                });
+            }
+
+            // Inicia a verificação ao abrir a tela e repete a cada 5 segundos
+            verificarTodosBots();
+            setInterval(verificarTodosBots, 5000);
+        });
+
+        // Funções para os botões de controle
+        async function controlarBot(sessaoId, acao) {
+            const badge = document.getElementById(`badge-bot-${sessaoId}`);
+            if(badge) {
+                badge.className = "badge bg-info text-dark";
+                badge.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processando...';
+            }
+            try {
+                await fetch(`/bot-interno/api/bot/${acao}?sessao=${sessaoId}`, { method: 'POST' });
+            } catch(e) {
+                console.error("Erro ao comandar bot:", e);
+            }
+        }
+
+        async function reiniciarBot(sessaoId) {
+            await controlarBot(sessaoId, 'stop');
+            setTimeout(() => {
+                controlarBot(sessaoId, 'start');
+            }, 1500);
+        }
+    </script>
 </body>
 </html>

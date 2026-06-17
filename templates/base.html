@@ -226,10 +226,19 @@
                     <a href="{{ url_for('logout') }}" class="btn btn-outline-light fw-bold px-4 rounded-pill">Sair</a>
                 </div>
             </div>
+            
         {% elif saas_plano == 'Trial' %}
-            <div class="bg-warning text-dark text-center py-2 px-3 fw-bold shadow-sm d-flex justify-content-center align-items-center gap-2" style="font-size: 0.85rem; z-index: 1040; position: relative;">
+            <div class="bg-warning text-dark text-center py-2 px-3 fw-bold shadow-sm d-flex flex-wrap justify-content-center align-items-center gap-2" style="font-size: 0.85rem; z-index: 1040; position: relative;">
                 <i class="fa-solid fa-stopwatch fa-lg"></i>
                 Você está usando o período de teste. Restam {{ saas_dias }} dias!
+                <a href="https://wa.me/5547992907248?text=Olá, estou testando o sistema e quero assinar o plano Premium!" target="_blank" class="btn btn-sm btn-dark rounded-pill px-3 py-0 ms-md-2 mt-2 mt-md-0" style="font-size: 0.75rem;">Assinar Premium</a>
+            </div>
+            
+        {% elif saas_plano == 'Premium' and saas_dias <= 5 %}
+            <div class="bg-danger text-white text-center py-2 px-3 fw-bold shadow-sm d-flex flex-wrap justify-content-center align-items-center gap-2" style="font-size: 0.85rem; z-index: 1040; position: relative;">
+                <i class="fa-solid fa-triangle-exclamation fa-lg text-warning"></i>
+                Atenção: Sua assinatura Premium vence em {{ saas_dias }} dia(s). 
+                <a href="https://wa.me/5547992907248?text=Olá, vi que minha assinatura do sistema está vencendo e quero renovar." target="_blank" class="btn btn-sm btn-light text-dark rounded-pill px-3 py-0 ms-md-2 mt-2 mt-md-0 fw-bold" style="font-size: 0.75rem;">Renovar Agora</a>
             </div>
         {% endif %}
     {% endif %}

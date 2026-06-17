@@ -1,6 +1,6 @@
 from flask import Flask, redirect, render_template, request, url_for, session, flash, jsonify
 from models import db, Estabelecimento, Servico, Agendamento, Cliente, Pacote, ClientePacote, ConfigHorario
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 import os
 from werkzeug.utils import secure_filename
@@ -27,6 +27,16 @@ def admin_required(f):
             return redirect(url_for('login_master'))
         return f(*args, **kwargs)
     return decorated_function
+
+@app.context_processor
+def inject_saas_info():
+    if 'estabelecimento_id' in session:
+        from datetime import datetime
+        est = Estabelecimento.query.get(session['estabelecimento_id'])
+        if est and est.data_vencimento:
+            dias_restantes = (est.data_vencimento - datetime.now()).days
+            return {'saas_dias': dias_restantes, 'saas_plano': est.plano}
+    return {}
 
 @app.route('/')
 def dashboard():
@@ -572,6 +582,24 @@ def login_master():
         flash('Chave Mestra Incorreta.')
     return render_template('login_master.html')
 
+@app.route('/mestre_do_saas/renovar/<int:id>', methods=['POST'])
+def mestre_renovar(id):
+    # Verifica a senha master da session aqui (sua regra de segurança)
+    
+    est = Estabelecimento.query.get_or_404(id)
+    meses = int(request.form.get('meses', 1))
+    dias_adicionais = meses * 30
+    
+    # Se já venceu, conta a partir de hoje. Se ainda não venceu, soma em cima do que ele já tem.
+    if est.data_vencimento < datetime.now():
+        est.data_vencimento = datetime.now() + timedelta(days=dias_adicionais)
+    else:
+        est.data_vencimento = est.data_vencimento + timedelta(days=dias_adicionais)
+        
+    est.plano = 'Premium'
+    db.session.commit()
+    return redirect(request.referrer)
+
 @app.route('/painel_master', methods=['GET', 'POST'])
 @admin_required
 def painel_master():
@@ -581,7 +609,7 @@ def painel_master():
         senha = request.form.get('senha')
         nicho = request.form.get('nicho', 'manicure') # Captura o nicho selecionado
         
-        nova = Estabelecimento(nome=nome, telefone_bot=telefone, senha=senha, nicho=nicho)
+        nova = Estabelecimento(nome=nome, telefone_bot=telefone, senha=senha, nicho=nicho, plano='Trial', data_vencimento=datetime.now() + timedelta(days=7))
         db.session.add(nova)
         db.session.commit()
         

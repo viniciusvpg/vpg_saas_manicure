@@ -10,6 +10,8 @@ class Estabelecimento(db.Model): # Antiga classe Manicure
     telefone_bot = db.Column(db.String(20), unique=True, nullable=False)
     senha = db.Column(db.String(100), nullable=False)
     ativo = db.Column(db.Boolean, default=True)
+    plano = db.Column(db.String(20), default='Trial')
+    data_vencimento = db.Column(db.DateTime, nullable=True)
     
     # NOVO CAMPO: Define o tema do painel
     nicho = db.Column(db.String(50), default='azul_safira')

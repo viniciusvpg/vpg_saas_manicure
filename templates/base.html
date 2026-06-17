@@ -213,7 +213,27 @@
 </head>
 
 <body class="tema-{{ session.get('nicho', 'azul_safira') }}">
-
+    {% if saas_dias is defined %}
+        {% if saas_dias < 0 %}
+            <div style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(10,10,10,0.95); backdrop-filter: blur(10px); z-index:99999; display:flex; align-items:center; justify-content:center; color:white; flex-direction:column; text-align: center; padding: 20px;">
+                <i class="fa-solid fa-lock text-danger mb-3" style="font-size: 60px;"></i>
+                <h2 class="fw-bold">Assinatura Expirada</h2>
+                <p class="text-muted mb-4">Seu período de uso do sistema chegou ao fim.<br>Entre em contato com o suporte para renovar seu acesso e continuar gerenciando sua agenda.</p>
+                <div class="d-flex gap-3">
+                    <a href="https://wa.me/5547992907248?text=Olá, minha assinatura venceu, gostaria de renovar." target="_blank" class="btn btn-success fw-bold px-4 rounded-pill">
+                        <i class="fa-brands fa-whatsapp fa-lg me-2"></i> Falar com Suporte
+                    </a>
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-light fw-bold px-4 rounded-pill">Sair</a>
+                </div>
+            </div>
+        {% elif saas_plano == 'Trial' %}
+            <div class="bg-warning text-dark text-center py-2 px-3 fw-bold shadow-sm d-flex justify-content-center align-items-center gap-2" style="font-size: 0.85rem; z-index: 1040; position: relative;">
+                <i class="fa-solid fa-stopwatch fa-lg"></i>
+                Você está usando o período de teste. Restam {{ saas_dias }} dias!
+            </div>
+        {% endif %}
+    {% endif %}
+    
     <nav class="navbar shadow-sm sticky-top">
         <div class="container-fluid">
             <button class="navbar-toggler border-0 px-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">

@@ -587,15 +587,18 @@ def bot_horarios_livres():
 def bot_check_agendamentos():
     from datetime import datetime
     dados = request.json
-    whatsapp = dados.get('whatsapp')
+    whatsapp_bot = dados.get('whatsapp', '') # Ex: 47999551462
     est_id = int(dados.get('estabelecimento_id'))
     
-    # 1. Acha o cliente pelo número
-    cliente = Cliente.query.filter_by(whatsapp=whatsapp, estabelecimento_id=est_id).first()
+    # Busca flexível: Procura o número exato OU se o número do banco contém o número do bot
+    cliente = Cliente.query.filter(
+        Cliente.estabelecimento_id == est_id,
+        Cliente.whatsapp.like(f"%{whatsapp_bot}%")
+    ).first()
+    
     if not cliente:
         return jsonify({"agendamentos": []})
         
-    # 2. Puxa todos os horários futuros que ele tem marcados
     agora = datetime.now()
     agendamentos = Agendamento.query.filter(
         Agendamento.cliente_id == cliente.id,

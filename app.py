@@ -56,7 +56,9 @@ def dashboard():
     ).order_by(Agendamento.data_hora.asc()).all()
 
     total_atendimentos = len([a for a in agendamentos_hoje if a.status != 'Não Compareceu'])
-    faturamento_est = sum(a.servico.valor for a in agendamentos_hoje if a.status != 'Não Compareceu')
+    
+    # CORREÇÃO 1: Usa o valor_final (se existir e foi pago) ou o valor padrão do serviço
+    faturamento_est = sum((a.valor_final if a.valor_final is not None else a.servico.valor) for a in agendamentos_hoje if a.status != 'Não Compareceu')
 
     total_agendamentos_geral = Agendamento.query.filter_by(estabelecimento_id=estabelecimento_id_logado).count()
 
@@ -68,6 +70,9 @@ def dashboard():
 
     agenda_hoje = []
     for a in agendamentos_hoje:
+        # CORREÇÃO 2: Injeta a variável 'valor_real' para o HTML preencher o seu Modal
+        valor_base = a.valor_final if a.valor_final is not None else a.servico.valor
+        
         agenda_hoje.append({
             "id": a.id,                                 
             "tipo_pagamento": a.tipo_pagamento,         
@@ -76,7 +81,8 @@ def dashboard():
             "servico": a.servico.nome_servico,
             "telefone": a.cliente.whatsapp,
             "status": a.status,
-            "is_proximo": (a.id == proximo_id)
+            "is_proximo": (a.id == proximo_id),
+            "valor_real": f"{valor_base:.2f}".replace('.', ',')
         })
 
     dados_dinamicos = {
@@ -165,7 +171,9 @@ def financeiro():
         pago=True, 
         status='Concluído'
     ).order_by(Agendamento.data_hora.desc()).all()
-    total_avulso = sum(ap.servico.valor for ap in avulsos_pagos)
+    
+    # CORREÇÃO 3: O Financeiro geral também deve usar o valor editado do caixa
+    total_avulso = sum((ap.valor_final if ap.valor_final is not None else ap.servico.valor) for ap in avulsos_pagos)
     
     return render_template(
         'financeiro.html',
@@ -587,24 +595,28 @@ def bot_horarios_livres():
 def bot_check_agendamentos():
     from datetime import datetime
     dados = request.json
-    whatsapp_bot = dados.get('whatsapp', '') # Ex: 47999551462
+    whatsapp_bot = dados.get('whatsapp', '')
     est_id = int(dados.get('estabelecimento_id'))
     
-    # Busca flexível: Procura o número exato OU se o número do banco contém o número do bot
+    # A MÁGICA: Pegamos apenas os 8 últimos números para ignorar DDD e 9º dígito
+    final_numero = whatsapp_bot[-8:] if len(whatsapp_bot) >= 8 else whatsapp_bot
+    
+    # Procura o cliente que tenha esses 8 números no final
     cliente = Cliente.query.filter(
         Cliente.estabelecimento_id == est_id,
-        Cliente.whatsapp.like(f"%{whatsapp_bot}%")
+        Cliente.whatsapp.like(f"%{final_numero}%")
     ).first()
     
     if not cliente:
         return jsonify({"agendamentos": []})
         
     agora = datetime.now()
+    # Puxa agendamentos futuros que não estejam cancelados ou concluídos
     agendamentos = Agendamento.query.filter(
         Agendamento.cliente_id == cliente.id,
         Agendamento.estabelecimento_id == est_id,
         Agendamento.data_hora >= agora,
-        Agendamento.status != "Cancelado"
+        Agendamento.status.notin_(["Cancelado", "Concluído", "Não Compareceu"])
     ).order_by(Agendamento.data_hora.asc()).all()
     
     lista = []

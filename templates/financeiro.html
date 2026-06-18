@@ -45,7 +45,13 @@
                     <td class="fw-bold">{{ ap.cliente.nome }}</td>
                     <td>Atendimento Avulso: <span class="badge bg-light text-dark border">{{ ap.servico.nome_servico }}</span></td>
                     <td class="text-muted">{{ ap.data_hora.strftime('%d/%m/%Y %H:%M') }}</td>
-                    <td class="fw-bold text-success">+ R$ {{ "%.2f"|format(ap.servico.valor)|replace('.', ',') }}</td>
+                    <td class="fw-bold text-success">
+                        {% if ap.valor_final is not none %}
+                            + R$ {{ "%.2f"|format(ap.valor_final)|replace('.', ',') }}
+                        {% else %}
+                            + R$ {{ "%.2f"|format(ap.servico.valor)|replace('.', ',') }}
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
 
@@ -54,13 +60,13 @@
                     <td class="fw-bold">{{ vp.cliente.nome }}</td>
                     <td>Compra de Combo: <span class="badge text-purple bg-purple-subtle border" style="background-color: #f3e5f5; color:#9c27b0;">{{ vp.pacote_comprado.nome_pacote }}</span></td>
                     <td class="text-muted">{{ vp.data_compra.strftime('%d/%m/%Y %H:%M') }}</td>
-                    <td class="fw-bold text-success">+ R$ {{ "%.2f"|format(ap.valor_final if ap.valor_final != None else ap.servico.valor)|replace('.', ',') }}</td>
+                    <td class="fw-bold text-success">+ R$ {{ "%.2f"|format(vp.pacote_comprado.valor_total)|replace('.', ',') }}</td>
                 </tr>
                 {% endfor %}
 
                 {% if not avulsos_pagos and not vendas_pacotes %}
                 <tr>
-                    <td colspan="4" class="text-center text-muted p-4">Nenhuma entrada registrada no caixa ainda.</td>
+                    <td colspan="4" class="text-center text-muted p-4">Nenhuma entrada registada no caixa ainda.</td>
                 </tr>
                 {% endif %}
             </tbody>

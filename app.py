@@ -499,7 +499,7 @@ def bot_registrar_agendamento():
 
 @app.route('/api/bot/horarios-livres', methods=['POST'])
 def bot_horarios_livres():
-    from datetime import timedelta
+    from datetime import timedelta, datetime
     dados = request.json
     est_id = int(dados.get('estabelecimento_id'))
     servico_id = int(dados.get('servico_id'))
@@ -524,11 +524,13 @@ def bot_horarios_livres():
     
     inicio_dia = data_foco.replace(hour=0, minute=0, second=0)
     fim_dia = data_foco.replace(hour=23, minute=59, second=59)
+    
     agendamentos_dia = Agendamento.query.filter(
         Agendamento.estabelecimento_id == est_id,
         Agendamento.data_hora >= inicio_dia,
         Agendamento.data_hora <= fim_dia,
-        Agendamento.status != "Não Compareceu"
+        Agendamento.status != "Não Compareceu",
+        Agendamento.status != "Cancelado"
     ).all()
     
     atual = data_foco.replace(hour=int(config.hora_inicio.split(':')[0]), minute=int(config.hora_inicio.split(':')[1]))
@@ -546,26 +548,71 @@ def bot_horarios_livres():
         slot_inicio = atual
         slot_fim = atual + duracao_servico
         
-        no_almoco = False
+        # 1. Pular o horário de almoço de forma inteligente
         if alm_ini and alm_fim:
-            if (slot_inicio >= alm_ini and slot_inicio < alm_fim) or (slot_fim > alm_ini and slot_fim <= alm_fim) or (slot_inicio <= alm_ini and slot_fim >= alm_fim):
-                no_almoco = True
+            if slot_inicio < alm_fim and slot_fim > alm_ini:
+                atual = alm_fim # Pula direto para a volta do almoço
+                continue
         
+        # 2. Checar conflitos na agenda
         conflito = False
+        fim_conflito = None
+        
         for ag in agendamentos_dia:
             ag_ini = ag.data_hora
             duracao_ag = timedelta(minutes=ag.servico.duracao_minutos) if ag.servico else timedelta(minutes=30)
             ag_fim = ag_ini + duracao_ag
+            
+            # Se o nosso slot bater com o horário de outro cliente
             if slot_inicio < ag_fim and slot_fim > ag_ini:
                 conflito = True
-                break
-                
-        if not no_almoco and not conflito:
-            horarios_disponiveis.append(slot_inicio.strftime("%H:%M"))
+                # Registra qual é o fim do agendamento que nos bloqueou
+                if not fim_conflito or ag_fim > fim_conflito:
+                    fim_conflito = ag_fim
+                    
+        if conflito:
+            # Se bateu com alguém, pula direto para o fim do atendimento dele!
+            atual = fim_conflito
+            continue
             
-        atual += timedelta(minutes=30)
+        # 3. Se não tem conflito nem almoço, o horário está limpo!
+        horarios_disponiveis.append(slot_inicio.strftime("%H:%M"))
+        
+        # A MÁGICA ACONTECE AQUI: Avança o relógio com base na duração do serviço
+        atual += duracao_servico
         
     return jsonify({"horarios": horarios_disponiveis})
+
+@app.route('/api/bot/check-agendamentos', methods=['POST'])
+def bot_check_agendamentos():
+    from datetime import datetime
+    dados = request.json
+    whatsapp = dados.get('whatsapp')
+    est_id = int(dados.get('estabelecimento_id'))
+    
+    # 1. Acha o cliente pelo número
+    cliente = Cliente.query.filter_by(whatsapp=whatsapp, estabelecimento_id=est_id).first()
+    if not cliente:
+        return jsonify({"agendamentos": []})
+        
+    # 2. Puxa todos os horários futuros que ele tem marcados
+    agora = datetime.now()
+    agendamentos = Agendamento.query.filter(
+        Agendamento.cliente_id == cliente.id,
+        Agendamento.estabelecimento_id == est_id,
+        Agendamento.data_hora >= agora,
+        Agendamento.status != "Cancelado"
+    ).order_by(Agendamento.data_hora.asc()).all()
+    
+    lista = []
+    for ag in agendamentos:
+        lista.append({
+            "data": ag.data_hora.strftime("%d/%m/%Y"),
+            "hora": ag.data_hora.strftime("%H:%M"),
+            "servico": ag.servico.nome if ag.servico else "Serviço"
+        })
+        
+    return jsonify({"agendamentos": lista})
 
 @app.route('/logout')
 def logout():

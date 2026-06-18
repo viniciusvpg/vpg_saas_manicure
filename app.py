@@ -593,15 +593,12 @@ def bot_horarios_livres():
 
 @app.route('/api/bot/check-agendamentos', methods=['POST'])
 def bot_check_agendamentos():
-    from datetime import datetime
     dados = request.json
     whatsapp_bot = dados.get('whatsapp', '')
     est_id = int(dados.get('estabelecimento_id'))
     
-    # A MÁGICA: Pegamos apenas os 8 últimos números para ignorar DDD e 9º dígito
     final_numero = whatsapp_bot[-8:] if len(whatsapp_bot) >= 8 else whatsapp_bot
     
-    # Procura o cliente que tenha esses 8 números no final
     cliente = Cliente.query.filter(
         Cliente.estabelecimento_id == est_id,
         Cliente.whatsapp.like(f"%{final_numero}%")
@@ -610,13 +607,11 @@ def bot_check_agendamentos():
     if not cliente:
         return jsonify({"agendamentos": []})
         
-    agora = datetime.now()
-    # Puxa agendamentos futuros que não estejam cancelados ou concluídos
+    # A MÁGICA: Busca tudo que estiver "Confirmado" (Em Aberto) independente da hora!
     agendamentos = Agendamento.query.filter(
         Agendamento.cliente_id == cliente.id,
         Agendamento.estabelecimento_id == est_id,
-        Agendamento.data_hora >= agora,
-        Agendamento.status.notin_(["Cancelado", "Concluído", "Não Compareceu"])
+        Agendamento.status == "Confirmado"
     ).order_by(Agendamento.data_hora.asc()).all()
     
     lista = []
@@ -624,7 +619,7 @@ def bot_check_agendamentos():
         lista.append({
             "data": ag.data_hora.strftime("%d/%m/%Y"),
             "hora": ag.data_hora.strftime("%H:%M"),
-            "servico": ag.servico.nome if ag.servico else "Serviço"
+            "servico": ag.servico.nome_servico if ag.servico else "Serviço"
         })
         
     return jsonify({"agendamentos": lista})

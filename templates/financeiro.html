@@ -54,7 +54,7 @@
                     <td class="fw-bold">{{ vp.cliente.nome }}</td>
                     <td>Compra de Combo: <span class="badge text-purple bg-purple-subtle border" style="background-color: #f3e5f5; color:#9c27b0;">{{ vp.pacote_comprado.nome_pacote }}</span></td>
                     <td class="text-muted">{{ vp.data_compra.strftime('%d/%m/%Y %H:%M') }}</td>
-                    <td class="fw-bold text-success">+ R$ {{ "%.2f"|format(vp.pacote_comprado.valor_total)|replace('.', ',') }}</td>
+                    <td class="fw-bold text-success">+ R$ {{ "%.2f"|format(ap.valor_final if ap.valor_final != None else ap.servico.valor)|replace('.', ',') }}</td>
                 </tr>
                 {% endfor %}
 
